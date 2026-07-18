@@ -27,11 +27,11 @@ pnpm build
 1. Create the Estimator agent from `elevenlabs/intake-agent.md`.
 2. Create a Supabase project and run `supabase db push`.
 3. Add `ELEVENLABS_API_KEY` and `ELEVENLABS_INTAKE_AGENT_ID` as Supabase function secrets.
-4. Deploy with `supabase functions deploy elevenlabs-token`.
+4. Deploy with `supabase functions deploy elevenlabs-token` and `supabase functions deploy elevenlabs-webhook --no-verify-jwt`.
 5. Copy `.env.example` to `.env.local` and fill the public `VITE_` values.
 6. Open Scope and start the live interview. The ElevenLabs API key remains server-side.
 
-The vertical slice uses ElevenLabs WebRTC conversation tokens. Post-call webhook ingestion and document extraction are the next gates; fixture sessions never count as live challenge evidence.
+The live slice uses ElevenLabs WebRTC conversation tokens. The webhook function verifies the current `ElevenLabs-Signature` HMAC contract, rejects stale signatures, records events idempotently, and persists transcripts/analysis server-side. Configure its public URL as an ElevenLabs post-call webhook and keep `ELEVENLABS_WEBHOOK_SECRET` in Supabase secrets. Fixture sessions never count as live challenge evidence.
 
 ## Lovable
 

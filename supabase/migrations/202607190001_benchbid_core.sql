@@ -49,9 +49,22 @@ create table public.webhook_events (
   received_at timestamptz not null default now()
 );
 
+create index calls_scope_id_idx on public.calls (scope_id);
+create index calls_provider_id_idx on public.calls (provider_id);
+create index calls_lifecycle_created_at_idx on public.calls (lifecycle, created_at desc);
+create index webhook_events_conversation_id_idx on public.webhook_events (conversation_id)
+  where conversation_id is not null;
+
 alter table public.service_scopes enable row level security;
 alter table public.providers enable row level security;
 alter table public.calls enable row level security;
 alter table public.webhook_events enable row level security;
+
+-- Deliberately no browser policies: these records contain procurement evidence.
+-- Writes and reads go through authenticated Edge Functions using the service role.
+revoke all on public.service_scopes from anon, authenticated;
+revoke all on public.providers from anon, authenticated;
+revoke all on public.calls from anon, authenticated;
+revoke all on public.webhook_events from anon, authenticated;
 
 comment on table public.webhook_events is 'Server-only idempotency ledger for verified ElevenLabs webhooks.';

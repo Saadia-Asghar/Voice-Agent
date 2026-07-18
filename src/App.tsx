@@ -1,9 +1,11 @@
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { Activity, Check, ChevronRight, CircleAlert, FileText, LockKeyhole, Mic, Phone, ShieldCheck, Sparkles } from "lucide-react";
 import { concessions, quotes } from "./fixtures";
 import { currency, knownCashTotal, rankQuotes } from "./domain";
-import { VoiceIntake } from "./VoiceIntake";
 import "./styles.css";
+
+const ScopeStudio = lazy(() => import("./ScopeStudio").then((module) => ({ default: module.ScopeStudio })));
+const CallRoom = lazy(() => import("./CallRoom").then((module) => ({ default: module.CallRoom })));
 
 const steps = ["Scope", "Call room", "Deal room", "Award memo"] as const;
 type Step = (typeof steps)[number];
@@ -11,7 +13,7 @@ type Step = (typeof steps)[number];
 export default function App() {
   const [active, setActive] = useState<Step>("Deal room");
   const [downtime, setDowntime] = useState(100);
-  const [drawer, setDrawer] = useState<"scope" | "evidence" | "memo" | "calls" | null>(null);
+  const [drawer, setDrawer] = useState<"evidence" | "memo" | "calls" | null>(null);
   const ranked = useMemo(
     () => rankQuotes(quotes, { downtimeCostPerHour: downtime, requiredExcludedServices: { loaner: 700, warranty: 300, "callout fee": 400 } }),
     [downtime],
@@ -20,10 +22,7 @@ export default function App() {
 
   const openStep = (step: Step) => {
     setActive(step);
-    if (step === "Scope") setDrawer("scope");
-    else if (step === "Call room") setDrawer("calls");
-    else if (step === "Award memo") setDrawer("memo");
-    else setDrawer(null);
+    setDrawer(step === "Award memo" ? "memo" : null);
   };
 
   return (
@@ -42,7 +41,7 @@ export default function App() {
         ))}
       </nav>
 
-      <main id="top">
+      {active === "Scope" ? <Suspense fallback={<main className="workflow-loading">Loading Scope Studio…</main>}><ScopeStudio onOpenCalls={() => setActive("Call room")} /></Suspense> : active === "Call room" ? <Suspense fallback={<main className="workflow-loading">Loading Call Room…</main>}><CallRoom /></Suspense> : <main id="top">
         <section className="hero-card">
           <div>
             <span className="kicker"><Sparkles size={14} /> Decision-ready comparison</span>
@@ -118,14 +117,13 @@ export default function App() {
           <div><span className="voice-icon"><Mic /></span><div><strong>Voice is connected to action.</strong><p>Calls write structured terms, validate leverage, and update this decision in real time.</p></div></div>
           <button onClick={() => setDrawer("calls")}><Phone size={16} /> Replay golden calls</button>
         </section>
-      </main>
+      </main>}
 
       {drawer && (
         <div className="drawer-backdrop" role="presentation" onClick={() => setDrawer(null)}>
           <section className="detail-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" onClick={(event) => event.stopPropagation()}>
             <button className="drawer-close" onClick={() => setDrawer(null)} aria-label="Close details">Close</button>
             {drawer === "evidence" && <><span className="kicker">Transcript receipts</span><h2 id="drawer-title">Every material term links to the call.</h2>{quotes.flatMap((quote) => quote.evidence.map((item) => <blockquote key={item.id}><strong>{quote.provider} / {item.at}</strong><p>“{item.quote}”</p></blockquote>))}</>}
-            {drawer === "scope" && <><span className="kicker">Locked service scope</span><h2 id="drawer-title">ScopePrint BB-7F3A-1042</h2><p>SpinPro X2 / Error E17 / calibration certificate required / response within 24 hours. Every provider receives this exact confirmed version.</p><div className="memo-callout"><LockKeyhole /> Confirmed by Saadia / version 3 / demo counterparties only</div><VoiceIntake /></>}
             {drawer === "memo" && <><span className="kicker">Human-reviewed award memo</span><h2 id="drawer-title">Recommend {winner?.quote.provider}</h2><p>The recommendation uses a ${downtime}/hour downtime scenario. Known effective cost is {currency(winner?.effective ?? null)}. The user must review assumptions and authorize any next step.</p><div className="memo-callout"><ShieldCheck /> BenchBid cannot accept, purchase, or bind a service contract.</div></>}
             {drawer === "calls" && <><span className="kicker">Golden-call library</span><h2 id="drawer-title">Three distinct conversation outcomes</h2>{quotes.map((quote) => <div className="call-replay" key={quote.provider}><span className={`outcome ${quote.status}`}>{quote.status}</span><div><strong>{quote.provider}</strong><p>{quote.evidence[0]?.quote ?? "No completed transcript evidence."}</p></div><button disabled aria-label={`Audio for ${quote.provider} is not connected yet`}>Audio adapter pending</button></div>)}</>}
           </section>
