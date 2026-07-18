@@ -10,12 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@elevenlabs/react": "^1.10.1",
+    "@supabase/supabase-js": "^2.110.7",
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
-    "typescript": "latest",
+    "lucide-react": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "lucide-react": "latest"
+    "typescript": "latest",
+    "vite": "latest",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/react": "latest",

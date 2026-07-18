@@ -22,12 +22,28 @@ pnpm test
 pnpm build
 ```
 
+## Live ElevenLabs intake
+
+1. Create the Estimator agent from `elevenlabs/intake-agent.md`.
+2. Create a Supabase project and run `supabase db push`.
+3. Add `ELEVENLABS_API_KEY` and `ELEVENLABS_INTAKE_AGENT_ID` as Supabase function secrets.
+4. Deploy with `supabase functions deploy elevenlabs-token`.
+5. Copy `.env.example` to `.env.local` and fill the public `VITE_` values.
+6. Open Scope and start the live interview. The ElevenLabs API key remains server-side.
+
+The vertical slice uses ElevenLabs WebRTC conversation tokens. Post-call webhook ingestion and document extraction are the next gates; fixture sessions never count as live challenge evidence.
+
+## Lovable
+
+Connect Lovable to this repository and paste [the guarded BenchBid prompt](docs/LOVABLE_PROMPT.md). Review its Git changes before merging. It must not replace the domain contracts or fabricate live states.
+
 ## Documentation
 
 - `docs/PRD.md`
 - `docs/TRD.md`
 - `docs/USER_SPEC.md`
 - `docs/REQUIREMENTS_TRACEABILITY.md`
+- `docs/LOVABLE_PROMPT.md`
 - `plans/benchbid-construction-blueprint.md`
 - `ELEVENLABS_WINNING_STRATEGY.md`
 
