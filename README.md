@@ -1,5 +1,7 @@
 # BenchBid
 
+> Build authority: [ElevenLabs challenge source of truth](docs/ELEVENLABS_CHALLENGE_SOURCE_OF_TRUTH.md). Every implementation and demo decision must pass its seven submission gates.
+
 BenchBid is a voice procurement agent for laboratory-equipment service. It converts voice and document intake into a confirmed service scope, collects comparable provider quotes, negotiates verified concessions, and produces an evidence-linked award memo.
 
 ## Current state
