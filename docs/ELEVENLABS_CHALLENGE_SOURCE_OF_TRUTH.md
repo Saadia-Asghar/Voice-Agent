@@ -2,7 +2,7 @@
 
 Source reviewed in full: `1784382172163-01-ElevenLabs-The-Negotiator.docx.pdf` (6 pages).
 
-This file is the product authority for ScopeDial. If another plan, feature, or demo choice conflicts with this brief, this file wins.
+This file is the product authority for BenchDial. If another plan, feature, or demo choice conflicts with this brief, this file wins.
 
 ## Page 1 — Challenge thesis
 
@@ -140,9 +140,9 @@ A submission is complete only when every gate passes:
 - [ ] Every call ends with an itemized quote, callback commitment, or documented decline.
 - [ ] The final report ranks every quote, cites recordings and transcripts, and explains the recommendation plainly.
 
-## ScopeDial interpretation
+## BenchDial interpretation
 
-ScopeDial uses laboratory equipment repair as the chosen B2B vertical. The challenge concepts map as follows:
+BenchDial uses laboratory equipment repair as the chosen B2B vertical. The challenge concepts map as follows:
 
 - Estimator: instrument, fault, location, urgency, calibration, access, and required deliverables.
 - Document intake: service report or existing repair quote parsed into the same scope schema.

@@ -1,11 +1,11 @@
-# Lovable prompt for ScopeDial
+# Lovable prompt for BenchDial
 
 Paste this as one prompt. Connect Lovable to the existing GitHub repository and instruct it to modify the current React/Vite application rather than generating a new project.
 
 ```text
-You are extending an existing React + Vite + TypeScript application called ScopeDial. Do not replace its architecture, package manager, domain model, colors, or typography. Inspect the repository first. Preserve src/domain.ts, src/contracts.ts, the Supabase directory, the existing dark laboratory-procurement design, and all working tests.
+You are extending an existing React + Vite + TypeScript application called BenchDial. Do not replace its architecture, package manager, domain model, colors, or typography. Inspect the repository first. Preserve src/domain.ts, src/contracts.ts, the Supabase directory, the existing laboratory-procurement design, and all working tests.
 
-Product: ScopeDial is an evidence-backed voice procurement negotiator for laboratory equipment repair. It is not a generic chatbot. Users create one confirmed ScopePrint, run three consenting live ElevenLabs provider conversations, normalize itemized quotes, negotiate using only verified leverage, and review an evidence-linked award memo.
+Product: BenchDial is an evidence-backed voice procurement negotiator for laboratory equipment repair. It is not a generic chatbot. Users create one confirmed ScopePrint, run three consenting live ElevenLabs provider conversations, normalize itemized quotes, negotiate using only verified leverage, and review an evidence-linked award memo.
 
 Create production-quality responsive screens for:
 1. Scope Studio: voice-interview card, document upload card, extracted-field comparison, visible conflicts, unknown fields, confirmation checkbox, version number, and canonical ScopePrint hash. Calls must remain disabled until scope status is confirmed.
@@ -17,5 +17,5 @@ UX requirements: excellent keyboard navigation, WCAG-visible focus, proper modal
 
 Use the existing CSS design language: near-black green background, restrained lime accent, serif editorial headings, compact procurement typography, thin green borders, data-dense tables, and no generic purple AI gradients. Keep mobile usable. Do not insert fake charts, fake recordings, fake live statuses, canned testimonials, or invented backend results.
 
-Data must come through typed adapters. Fixture data must always be labeled SIMULATED FIXTURE. Do not put ElevenLabs, OpenAI, or Supabase service-role secrets in client code. Use VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, and VITE_ELEVENLABS_INTAKE_AGENT_ID only. Run tests and production build before finishing. Return a concise list of changed files and any backend contracts you need; do not silently invent an API.
+Data must come through typed adapters. Fixture data must always be labeled SIMULATED FIXTURE. Do not put ElevenLabs, OpenAI, or Supabase service-role secrets in client code. Use VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, and the public ElevenLabs agent IDs only. Run tests and production build before finishing. Return a concise list of changed files and any backend contracts you need; do not silently invent an API.
 ```

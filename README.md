@@ -1,10 +1,10 @@
-# BenchQuote
+# BenchDial
 
 > Build authority: [ElevenLabs challenge source of truth](docs/ELEVENLABS_CHALLENGE_SOURCE_OF_TRUTH.md). Every implementation and demo decision must pass its seven submission gates.
 
-BenchQuote is AI voice procurement for laboratory operations. It converts one voice-and-document repair brief into comparable provider calls, negotiates only with verified leverage, and produces an evidence-linked award memo for human approval.
+BenchDial is AI voice negotiation for laboratory operations. It converts one voice-and-document repair brief into comparable provider calls, negotiates only with verified leverage, and produces an evidence-linked recovery decision for human approval.
 
-![BenchQuote landing page](benchquote-preview.png)
+![BenchDial landing page](benchquote-preview.png)
 
 ## Current state
 
@@ -37,7 +37,7 @@ The live slice uses ElevenLabs WebRTC conversation tokens. The webhook function 
 
 ## Lovable
 
-Connect Lovable to this repository and paste [the guarded BenchQuote prompt](docs/LOVABLE_PROMPT.md). Review its Git changes before merging. It must not replace the domain contracts or fabricate live states.
+Connect Lovable to this repository and paste [the guarded BenchDial prompt](docs/LOVABLE_PROMPT.md). Review its Git changes before merging. It must not replace the domain contracts or fabricate live states.
 
 ## Documentation
 
@@ -54,4 +54,4 @@ Connect Lovable to this repository and paste [the guarded BenchQuote prompt](doc
 
 ## Safety
 
-The golden demo uses consenting simulated counterparties. BenchQuote cannot purchase, accept, or bind a service contract. Do not commit API keys or Hack-Nation redemption links.
+The golden demo uses consenting simulated counterparties. BenchDial cannot purchase, accept, or bind a service contract. Do not commit API keys or Hack-Nation redemption links.

@@ -41,7 +41,49 @@ Deno.serve(async (request) => {
       return error ? Response.json({ error: "Could not bind the live conversation." }, { status: 500, headers: corsHeaders }) : Response.json({ attached: true }, { headers: corsHeaders });
     }
     const transcriptTurns = Array.isArray(call.transcript) ? call.transcript.length : 0;
-    return Response.json({ lifecycle: call.lifecycle, outcome: call.outcome, hasAudio: call.has_audio ?? false, transcriptTurns, verified: call.lifecycle === "completed" && transcriptTurns > 0 }, { headers: { ...corsHeaders, "Cache-Control": "no-store" } });
+    const verified = call.lifecycle === "completed" && transcriptTurns > 0;
+
+    let quoteData = null;
+    let concessionsData = [];
+    let evidenceData = [];
+    let terminalDetails = null;
+
+    if (verified) {
+      const { data: quote } = await db.from("quotes").select("*").eq("call_id", call.id).maybeSingle();
+      if (quote) {
+        quoteData = {
+          packageTotal: quote.package_total,
+          responseHours: quote.response_hours,
+          turnaroundHours: quote.turnaround_hours,
+          warrantyDays: quote.warranty_days,
+          exclusions: quote.exclusions,
+          unknowns: quote.unknowns,
+          scopeMatch: quote.scope_match ?? Math.max(0, 100 - (quote.unknowns?.length ?? 0) * 14),
+          itemizedTerms: quote.itemized_terms
+        };
+      }
+
+      const { data: concessions } = await db.from("concessions").select("*").eq("call_id", call.id);
+      if (concessions) concessionsData = concessions;
+
+      const { data: evidence } = await db.from("transcript_evidence").select("*").eq("call_id", call.id);
+      if (evidence) evidenceData = evidence;
+
+      const { data: terminalEvent } = await db.from("audit_events").select("detail").eq("call_id", call.id).eq("event_type", "terminal_outcome_recorded").maybeSingle();
+      if (terminalEvent) terminalDetails = terminalEvent.detail;
+    }
+
+    return Response.json({
+      lifecycle: call.lifecycle,
+      outcome: call.outcome,
+      hasAudio: call.has_audio ?? false,
+      transcriptTurns,
+      verified,
+      quote: quoteData,
+      concessions: concessionsData,
+      evidence: evidenceData,
+      terminalDetails
+    }, { headers: { ...corsHeaders, "Cache-Control": "no-store" } });
   }
 
   if (request.method !== "GET") return Response.json({ error: "Method not allowed." }, { status: 405, headers: corsHeaders });
@@ -61,7 +103,7 @@ Deno.serve(async (request) => {
   if (!providerName) return Response.json({ token: body.token }, { headers: { ...corsHeaders, "Cache-Control": "no-store" } });
   if (agentId !== Deno.env.get("ELEVENLABS_BUYER_AGENT_ID") || providerName.length > 80) return Response.json({ error: "Live evidence sessions require the Buyer agent and a valid provider." }, { status: 400, headers: corsHeaders });
 
-  const scopeHash = "BB-7F3A-1042";
+  const scopeHash = "BD-7F3A-1042";
   const { data: scope, error: scopeError } = await db.from("service_scopes").upsert({ canonical_hash: scopeHash, version: 1, confirmation_status: "confirmed", confirmed_at: new Date().toISOString(), specification: { vertical: "laboratory_equipment_repair", instrument: "SpinPro X2", fault: "Error E17", scope_print: scopeHash } }, { onConflict: "canonical_hash" }).select("id").single();
   if (scopeError || !scope) return Response.json({ error: "Could not create the evidence scope." }, { status: 500, headers: corsHeaders });
   let { data: provider } = await db.from("providers").select("id").eq("display_name", providerName).limit(1).maybeSingle();

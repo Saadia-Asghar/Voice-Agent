@@ -76,7 +76,7 @@ export const isSuspiciouslyLowQuote = (
     .map(knownCashTotal)
     .filter((total): total is number => total !== null)
     .sort((a, b) => a - b);
-  if (candidateTotal === null || peerTotals.length < 2 || threshold <= 0 || threshold >= 1) return false;
+  if (candidateTotal === null || peerTotals.length < 1 || threshold <= 0 || threshold >= 1) return false;
   const middle = Math.floor(peerTotals.length / 2);
   const median = peerTotals.length % 2 ? peerTotals[middle] : (peerTotals[middle - 1] + peerTotals[middle]) / 2;
   return candidateTotal <= median * (1 - threshold);

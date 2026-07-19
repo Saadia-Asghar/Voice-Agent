@@ -1,14 +1,14 @@
-# ScopeDial — Challenge Playbook
+# BenchDial — Challenge Playbook
 
 ## What the app is
 
-ScopeDial is an evidence-first voice procurement agent for laboratory-equipment repair. It is built for laboratory operations leads who must compare phone-only service offers under downtime pressure, and for procurement reviewers who need an auditable recommendation.
+BenchDial is an evidence-first voice procurement agent for laboratory-equipment repair. It is built for laboratory operations leads who must compare phone-only service offers under downtime pressure, and for procurement reviewers who need an auditable recommendation.
 
-The user describes a repair once by voice and/or document. ScopeDial produces one confirmed structured `ScopePrint`, reuses it verbatim in every call, extracts itemized terms, negotiates only with server-verified leverage, and ranks the resulting options by known cash cost, downtime, scope coverage, exclusions, warranty, response, and unresolved facts. A human—not the agent—approves the award memo.
+The user describes a repair once by voice and/or document. BenchDial produces one confirmed structured `ScopePrint`, reuses it verbatim in every call, extracts itemized terms, negotiates only with server-verified leverage, and ranks the resulting options by known cash cost, downtime, scope coverage, exclusions, warranty, response, and unresolved facts. A human—not the agent—approves the award memo.
 
 ## Case statement and solution proof
 
-The PDF's problem is that phone-priced services are difficult to compare and negotiate. A headline price hides fees, exclusions, timing, and risk. ScopeDial proves the solution through a closed evidence chain:
+The PDF's problem is that phone-priced services are difficult to compare and negotiate. A headline price hides fees, exclusions, timing, and risk. BenchDial proves the solution through a closed evidence chain:
 
 `voice/document evidence -> confirmed structured scope -> identical call scope hash -> terminal call records -> transcript-backed concessions -> normalized ranking -> human-approved memo`
 
@@ -16,7 +16,7 @@ The initial vertical is laboratory-equipment repair because downtime is measurab
 
 ## PDF compliance checklist
 
-| Challenge requirement | ScopeDial implementation | Submission proof still needed |
+| Challenge requirement | BenchDial implementation | Submission proof still needed |
 |---|---|---|
 | Closed end-to-end MVP in one phone-priced vertical | Four connected stages for laboratory repair: Scope, Call Room, Deal Room, Award Memo | None for software path |
 | Voice interview through ElevenLabs | Live Estimator WebRTC session with server-issued conversation token | Record one clean intake |
@@ -42,7 +42,7 @@ The initial vertical is laboratory-equipment repair because downtime is measurab
 ## Screen and demo-user specification
 
 1. **Home** explains the audience, problem, solution, four-step workflow, evidence policy, agent readiness, and honest challenge status.
-2. **Scope** lets Saadia Asghar, Lab Operations Lead at City Labs, upload a service report, reconcile conflicts, complete missing fields by voice, and explicitly lock ScopePrint `BB-7F3A-1042`.
+2. **Scope** lets Saadia Asghar, Lab Operations Lead at City Labs, upload a service report, reconcile conflicts, complete missing fields by voice, and explicitly lock ScopePrint `BD-7F3A-1042`.
 3. **Call Room** runs the identical scope against three styles. Fixtures are visibly labeled and can never become `RECORDED LIVE RUN`; only a signed post-call webhook with a non-empty transcript can do that.
 4. **Deal Room** normalizes quotes, preserves unknowns, adds downtime, warns about suspiciously cheap offers, and ties concessions to transcript evidence.
 5. **Award Memo** recommends an option in plain language, shows evidence receipts, and requires human approval.

@@ -1,4 +1,4 @@
-# ScopeDial User and UX Specification
+# BenchDial User and UX Specification
 
 ## Persona: Saadia, laboratory operations lead
 

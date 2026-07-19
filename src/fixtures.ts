@@ -1,5 +1,6 @@
 import type { ServiceQuote } from "./domain";
 
+/** Fixture quotes aligned with Call Room outcomes: quote / negotiated quote / decline. */
 export const quotes: ServiceQuote[] = [
   {
     provider: "OEM Precision",
@@ -31,29 +32,33 @@ export const quotes: ServiceQuote[] = [
     loanerIncluded: false,
     scopeMatch: 86,
     unknowns: ["loaner"],
-    evidence: [{ id: "rapid-1", at: "01:48", quote: "Calibration would be another six hundred dollars." }],
+    evidence: [
+      { id: "rapid-1", at: "01:48", quote: "Calibration would be another six hundred dollars." },
+      { id: "rapid-2", at: "04:18", quote: "Call-out drops to four fifty and we’ll add ninety-day labor warranty." },
+    ],
   },
   {
     provider: "MetroLab Field",
     providerType: "Regional service",
-    status: "callback",
-    packageTotal: 2800,
+    status: "declined",
+    packageTotal: null,
     callout: { amount: null, inclusion: "unknown" },
     calibration: { amount: 250, inclusion: "additional" },
-    parts: { amount: 550, inclusion: "additional" },
+    parts: { amount: null, inclusion: "unknown" },
     responseHours: 24,
-    turnaroundHours: 40,
+    turnaroundHours: null,
     warrantyDays: null,
     loanerIncluded: null,
-    scopeMatch: 71,
-    unknowns: ["callout fee", "warranty", "loaner"],
-    evidence: [{ id: "metro-1", at: "03:08", quote: "I need our field manager to confirm warranty and call-out fees." }],
+    scopeMatch: 40,
+    unknowns: ["package total", "callout fee", "parts", "warranty", "loaner"],
+    evidence: [{ id: "metro-1", at: "03:08", quote: "We don’t quote that model by phone. We’re going to pass." }],
   },
 ];
 
+/** Concession ledger — terms moved because of verified competing leverage (Closer requirement). */
 export const concessions = [
-  { at: "03:02", label: "Leverage verified", detail: "OEM offer includes calibration and a 24-hour response." },
-  { at: "03:26", label: "Response improved", detail: "RapidBench moved from 48 hours to 36 hours." },
-  { at: "03:55", label: "Warranty added", detail: "RapidBench added a 90-day labor warranty." },
-  { at: "04:18", label: "Call-out reduced", detail: "Call-out fee changed from $650 to $450." },
+  { at: "03:02", label: "Leverage verified", detail: "check_leverage confirmed OEM calibration-included offer on the same ScopePrint." },
+  { at: "03:26", label: "Response improved", detail: "RapidBench moved from 48 hours to 36 hours after the verified OEM comparison." },
+  { at: "03:55", label: "Warranty added", detail: "RapidBench added a 90-day labor warranty that was not in the opening offer." },
+  { at: "04:18", label: "Call-out reduced", detail: "Call-out fee changed from $650 to $450 because of leverage — not a scripted concession." },
 ];

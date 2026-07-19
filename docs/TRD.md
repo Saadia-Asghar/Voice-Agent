@@ -1,4 +1,4 @@
-# ScopeDial Technical Requirements Document
+# BenchDial Technical Requirements Document
 
 ## Architecture
 

@@ -1,47 +1,59 @@
-# ScopeDial pitch deck — six slides
+# BenchDial pitch deck — six slides
 
-## 1. The hidden tax of a broken lab
+## 1. When the bench breaks
 
-**Headline:** The lowest repair quote can be the most expensive decision.
+**Headline:** The cheapest repair quote can be the most expensive recovery.
 
-A failed centrifuge stops experiments. Phone quotes omit calibration, callout, parts, warranty, and response assumptions. Teams repeat the same story and still receive offers that cannot be compared.
+A failed laboratory instrument stops experiments. The real repair price is trapped in phone calls that omit calibration, callout, parts, warranty, and response assumptions.
 
-Visual: one broken SpinPro X2 surrounded by three incompatible quote cards.
+Visual: one failed SpinPro X2 in the center; three incompatible offers orbiting it.
 
-## 2. One scope in; a defensible award out
+## 2. Dial the bench back online
 
-**ScopeDial** converts voice and documents into one confirmed ScopePrint, runs comparable provider conversations, negotiates with verified leverage, and produces an evidence-linked human decision.
+**BenchDial** turns one verified repair brief into comparable AI voice negotiations and an evidence-backed recovery decision.
 
 Visual: ScopePrint → three calls → Concession Ledger → Award Memo.
 
-## 3. The live moment
+Say: “Bench tells you who it serves. Dial tells you what it does. When the bench breaks, BenchDial.”
 
-Show the real signed-webhook flow:
+## 3. The live proof
 
-1. Buyer discloses that it is AI.
-2. Counterparty hides or refuses a term.
-3. Buyer recovers and forces a structured ending.
-4. The lane becomes `RECORDED LIVE RUN` only after the transcript is verified.
+1. The agent discloses that it is AI and obtains recording consent.
+2. Every provider hears the same locked ScopePrint.
+3. Hidden fees, exclusions, response time, calibration, warranty, and loaner coverage become structured fields.
+4. A run becomes `RECORDED LIVE RUN` only after a signed webhook stores its transcript.
 
-## 4. Creativity that changes the decision
+## 4. The decision changes
 
-- **ScopePrint:** identical, confirmed requirements across every provider.
+- **ScopePrint:** one confirmed requirement set for every provider.
 - **Honesty Firewall:** no competing offer can be claimed unless the database proves it exists.
 - **Concession Ledger:** before, after, leverage source, and transcript receipt.
-- **Downtime economics:** exposes when a cheap quote costs more operationally.
+- **Downtime economics:** proves when the cheapest sticker price delays the lab and costs more.
 
-## 5. Technical depth and trust boundary
+Judge moment: move the downtime control and show the apparent winner lose—then open the exact transcript evidence that justifies the recommendation.
 
-ElevenLabs Agents + React/TypeScript + Supabase Edge Functions/Postgres + Vercel.
+## 5. More than an LLM wrapper
 
-Private API key → short-lived WebRTC token → conversation-ID binding → signed post-call webhook → server-only evidence → deterministic ranking → human approval.
+ElevenLabs Agents + React/TypeScript + Supabase Auth/Edge Functions/Postgres + Vercel.
 
-ScopeDial cannot bluff, purchase, accept, or bind a service contract.
+Private API key → short-lived conversation token → authenticated user → conversation-ID binding → signed post-call webhook → server-only evidence → deterministic ranking → human approval.
 
-## 6. Impact and close
+BenchDial can negotiate and recommend. It cannot bluff, purchase, accept, or bind a service contract.
 
-**From repeated phone calls to an auditable buying decision in minutes.**
+## 6. Close
 
-Demo metrics: three providers, two comparable offers, one structured decline/callback, one measurable concession, and one evidence-backed award.
+**From repeated calls to an auditable recovery decision in minutes.**
 
-Close: “ScopeDial does not replace the buyer. It gives the buyer receipts.”
+“BenchDial does not replace the buyer. It gives the buyer receipts—and gets the bench back online.”
+
+## 30-second pitch
+
+“A $100,000 lab instrument breaks. The real repair price is not online—it is trapped in phone calls. BenchDial verifies the job once, gives the identical scope to every provider, negotiates price, response, calibration, and warranty without bluffing, then ranks the fastest recovery, not merely the cheapest quote. Every concession has a transcript receipt, and a human remains in control. When the bench breaks, BenchDial.”
+
+## Why judges should choose BenchDial
+
+1. It is a vertical operating product, not a generic call bot.
+2. Its evidence chain is visible end to end: Scope → Call → Concession → Award.
+3. Downtime economics creates a surprising, defensible demo reversal.
+4. The Honesty Firewall turns responsible AI into working architecture.
+5. The name is short, explainable, and naturally becomes a call to action.

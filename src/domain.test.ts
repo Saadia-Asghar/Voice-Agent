@@ -61,6 +61,12 @@ describe("quote economics", () => {
     expect(isSuspiciouslyLowQuote(candidate, [candidate, ...peers], labEquipmentRepair.suspiciousLowQuoteThreshold)).toBe(true);
   });
 
+  it("warns when a comparable quote is at least 30% below a single peer", () => {
+    const candidate = { ...quote, provider: "Low", packageTotal: 1100, callout: { amount: 0, inclusion: "included" as const }, calibration: { amount: 0, inclusion: "included" as const }, parts: { amount: 0, inclusion: "included" as const } };
+    const peers = [{ ...quote, provider: "Peer A", packageTotal: 2000 }];
+    expect(isSuspiciouslyLowQuote(candidate, [candidate, ...peers], labEquipmentRepair.suspiciousLowQuoteThreshold)).toBe(true);
+  });
+
   it("does not call an incomplete quote suspiciously cheap", () => {
     const incomplete = { ...quote, provider: "Unknown", packageTotal: null };
     expect(isSuspiciouslyLowQuote(incomplete, [incomplete, quote, { ...quote, provider: "Peer" }])).toBe(false);

@@ -1,10 +1,10 @@
-# Hack-Nation official announcements: ScopeDial action plan
+# Hack-Nation official announcements: BenchDial action plan
 
 Source: Hack-Nation Discord announcement export supplied by Saadia Asghar on July 19, 2026.
 
 ## Rules and opportunities confirmed
 
-- Build within one of the six official challenges. ScopeDial enters **Challenge 1: ElevenLabs — The Negotiator**.
+- Build within one of the six official challenges. BenchDial enters **Challenge 1: ElevenLabs — The Negotiator**.
 - Solo participation is allowed; maximum team size is four.
 - The top three projects in every challenge win.
 - Judges score exactly three dimensions: **creativity, technical depth, and presentation**.
@@ -15,7 +15,7 @@ Source: Hack-Nation Discord announcement export supplied by Saadia Asghar on Jul
 
 ## Judge scorecard
 
-| Criterion | ScopeDial proof | Show in the video |
+| Criterion | BenchDial proof | Show in the video |
 |---|---|---|
 | Creativity | ScopePrint, Honesty Firewall, Concession Ledger, and downtime-adjusted awards turn voice into a defensible buying decision | Open with the broken centrifuge and reveal why the cheapest quote loses |
 | Technical depth | ElevenLabs WebRTC, short-lived server tokens, conversation-ID binding, signed HMAC webhooks, server-only evidence tables, structured outcomes, and deterministic ranking | End a real call, verify the signed transcript, then open its evidence receipt |
