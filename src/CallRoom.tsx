@@ -159,6 +159,10 @@ export function CallRoom({
           provider_name: providerCallList[index].name,
           negotiation_style: providerCallList[index].negotiationType,
           vertical: "laboratory_equipment_repair",
+          call_id: callId,
+          customer_name: confirmedScope!.confirmedBy || "Saadia Asghar",
+          negotiation_authority: confirmedScope!.specification.approvalAuthority || "Lab Operations Lead",
+          provider_id: providerCallList[index].name,
         },
         onConnect: ({ conversationId }) => {
           void fetch(`${supabaseUrl}/functions/v1/elevenlabs-token`, {
