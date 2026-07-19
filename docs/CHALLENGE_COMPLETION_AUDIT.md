@@ -1,0 +1,30 @@
+# ElevenLabs Negotiator Challenge Completion Audit
+
+## Implemented and deployed
+
+| Challenge gate | Production evidence |
+|---|---|
+| One vertical end to end | Laboratory repair: Scope Studio → Call Room → Deal Room → Award Memo |
+| Voice and document intake share one specification | Live ElevenLabs Estimator, PDF/image upload, conflict resolution, confirmation gate, ScopePrint hash |
+| Three distinct call styles | Three live Buyer/Closer lanes plus OEM, hidden-fee, and stonewalling counterparty configurations |
+| Measurable leverage-caused change | Honesty Firewall, exact competing-term verification, and Concession Ledger |
+| AI disclosure and no bluffing | Agent prompts, visible disclosure evidence, server-side leverage rejection, no purchase authority |
+| Structured endings | Quote, callback commitment, decline, incomplete outcome enum and persistence |
+| Ranked evidence-backed recommendation | Deterministic effective-cost ranking, transcript receipts, printable human-reviewed Award Memo |
+
+## Live infrastructure proof
+
+- Supabase project: `MIT hackathon / BenchBid`
+- Database migration applied with RLS and server-only evidence tables.
+- Deployed Edge Functions: `elevenlabs-token`, `elevenlabs-webhook`, `call-tools`.
+- Five ElevenLabs agents: Estimator, Buyer/Closer, OEM, RapidBench, MetroLab Field.
+- Workspace HMAC post-call webhook enabled for transcript and call-initiation-failure events.
+- Vercel production embeds the correct Supabase URL, anon key, Estimator ID, and Buyer ID.
+- Estimator conversation-token request returns HTTP 200.
+- Call Room exposes three live controls and retains explicitly labeled fixture fallbacks.
+
+## Evidence still requiring a human voice
+
+Software configuration cannot manufacture the challenge's mandatory live evidence. Before submission, a consenting human must complete three Buyer/Closer sessions in the three provider lanes, speaking as each counterparty style. At least one session must respond to truthful verified leverage with a measurable change. The webhook will then persist the genuine conversation IDs and transcripts, allowing the UI to label those lanes `RECORDED LIVE RUN`.
+
+Never mark a fixture as live and never submit generated fixture transcripts as the three mandatory calls.
