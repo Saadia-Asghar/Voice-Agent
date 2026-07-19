@@ -1,122 +1,128 @@
 import {
   ArrowRight,
   AudioWaveform,
-  Bot,
   Check,
   CircleAlert,
   Clock3,
   FileCheck2,
   FileText,
   LockKeyhole,
-  MessageSquareText,
   Mic,
   Phone,
   ShieldCheck,
   Sparkles,
-  UserRound,
+  Trophy,
 } from "lucide-react";
 
 type WorkflowStep = "Scope" | "Call room" | "Deal room" | "Award memo";
 
-const workflow = [
-  { icon: Mic, number: "01", title: "Brief the repair once", text: "Combine a voice interview and service documents into one human-confirmed repair specification." },
-  { icon: Phone, number: "02", title: "Call on equal terms", text: "Each provider receives the identical locked scope, so travel, parts, calibration, timing, and warranty become comparable." },
-  { icon: MessageSquareText, number: "03", title: "Negotiate with receipts", text: "The closer can use only server-verified leverage. Every measurable change links back to the conversation that caused it." },
-  { icon: FileCheck2, number: "04", title: "Recommend, never purchase", text: "Cash, downtime, coverage, exclusions, and unknowns become a plain-language award memo for human approval." },
+const providers = [
+  { name: "OEM Precision", total: "$3,950", warranty: "180d", eta: "18h", bars: [8,14,9,22,16,30,13,24,18,34,21,15,28,12,20,9] },
+  { name: "RapidBench", total: "$2,950", warranty: "90d", eta: "42h", bars: [12,21,8,27,17,12,31,20,10,24,16,28,13,22,9,14] },
+  { name: "MetroLab Field", total: "Callback", warranty: "—", eta: "Tue", bars: [7,12,18,9,23,13,8,19,26,11,17,8,21,14,9,12] },
 ] as const;
 
-const challengeProof = [
-  ["Voice interview UI and document attachment", "UI READY · EXTRACTION PENDING", "pending"],
-  ["Canonical repair scope reused across calls", "CONTRACT TESTED · LIVE BINDING PENDING", "pending"],
-  ["Three distinct negotiation styles", "FIXTURES READY · LIVE EVIDENCE REQUIRED", "pending"],
-  ["Itemized quote, callback, or decline", "SCHEMA TESTED · AGENT TOOLS PENDING", "pending"],
-  ["Leverage-caused measurable concession", "FIXTURE PROOF · LIVE EVIDENCE REQUIRED", "pending"],
-  ["AI disclosure and no-bluff guardrails", "ACTIVE + TESTED", "complete"],
-  ["Ranked, evidence-linked recommendation", "DEMO READY · LIVE PIPELINE PENDING", "pending"],
+const proof = [
+  ["Scope", "UI ready", "pending"],
+  ["Call binding", "Pending", "pending"],
+  ["3 live styles", "Evidence due", "pending"],
+  ["Outcomes", "Schema tested", "pending"],
+  ["Causation", "Evidence due", "pending"],
+  ["Honesty", "Tested", "complete"],
+  ["Award", "Demo ready", "pending"],
 ] as const;
 
-const callRows = [
-  { name: "OEM Precision", detail: "Complete package", total: "$3,950", eta: "18h", warranty: "180d", state: "QUOTE" },
-  { name: "RapidBench", detail: "Travel fee uncovered", total: "$2,950", eta: "42h", warranty: "90d", state: "QUOTE" },
-  { name: "MetroLab Field", detail: "Specialist callback", total: "—", eta: "Tue", warranty: "—", state: "CALLBACK" },
+const flow = [
+  { icon: FileText, number: "01", label: "Brief" },
+  { icon: LockKeyhole, number: "02", label: "Lock" },
+  { icon: AudioWaveform, number: "03", label: "Call" },
+  { icon: Check, number: "04", label: "Decide" },
 ] as const;
 
 export function Home({ onOpen }: { onOpen: (step: WorkflowStep) => void }) {
-  return <main className="home-screen" id="home">
-    <section className="home-hero">
-      <div className="hero-grid" aria-hidden="true" />
-      <div className="home-copy">
-        <span className="hero-audience"><AudioWaveform size={15} /> AI voice procurement for lab operations</span>
-        <h1>Comparable lab repair quotes.<br /><em>One voice brief.</em></h1>
-        <p>BenchQuote helps laboratory operations teams turn one verified repair scope into consistent provider calls, truthful negotiation, and a decision they can defend.</p>
-        <div className="home-actions">
-          <button className="home-primary" onClick={() => onOpen("Scope")}><Mic size={17} /> Run Saadia&apos;s demo</button>
-          <a className="home-secondary" href="#how-it-works">See how it works <ArrowRight size={16} /></a>
-        </div>
-        <small><ShieldCheck size={14} /> Simulated demo until signed live transcripts exist. BenchQuote cannot purchase or bind a contract.</small>
+  return <main className="home-screen visual-home" id="home">
+    <section className="visual-hero">
+      <div className="visual-hero-copy">
+        <h1>One repair brief.<br />Three comparable calls.</h1>
+        <p>AI voice procurement for lab repair.</p>
+        <button className="visual-primary" onClick={() => onOpen("Scope")}>Run the demo <ArrowRight /></button>
+        <small><ShieldCheck /> Simulated until signed live evidence exists.</small>
       </div>
 
-      <div className="product-preview" aria-label="Simulated BenchQuote provider comparison preview">
-        <div className="preview-topline">
-          <div><span className="preview-logo"><AudioWaveform /></span><strong>Repair event · SpinPro X2</strong></div>
-          <span className="demo-chip">SIMULATED DEMO</span>
-        </div>
-        <div className="preview-scope">
-          <span><LockKeyhole /></span>
-          <div><small>SCOPE VERIFIED</small><strong>Drive module E17 · calibration required</strong></div>
-          <em>BB-7F3A-1042</em>
-        </div>
-        <div className="preview-table">
-          <div className="preview-table-head"><span>Provider call</span><span>Total</span><span>ETA</span><span>Warranty</span><span>Outcome</span></div>
-          {callRows.map((row, index) => <div className={index === 0 ? "preview-row selected" : "preview-row"} key={row.name}>
-            <span className="provider-cell"><i>{index + 1}</i><span><strong>{row.name}</strong><small>{row.detail}</small></span><AudioWaveform /></span>
-            <strong>{row.total}</strong><span>{row.eta}</span><span>{row.warranty}</span><em>{row.state}</em>
-          </div>)}
-        </div>
-        <div className="preview-award">
-          <span className="award-icon"><Sparkles /></span>
-          <div><small>RECOMMENDED AFTER DOWNTIME</small><strong>OEM Precision</strong><p>Complete scope · fastest recovery · strongest warranty</p></div>
-          <button onClick={() => onOpen("Award memo")}>View memo <ArrowRight size={15} /></button>
-        </div>
-        <div className="floating-call"><span className="live-dot" /><div><small>VOICE LANE 02</small><strong>Negotiating travel fee</strong></div><AudioWaveform /></div>
+      <div className="decision-canvas" aria-label="A locked lab repair scope flows into three provider calls and one award recommendation">
+        <section className="canvas-scope">
+          <header><span>1</span> VERIFIED SCOPE</header>
+          <div className="scope-visual-card">
+            <div className="scope-locked"><Check /> Scope locked</div>
+            <div className="instrument-visual" aria-hidden="true"><span /><span /><span /><span /></div>
+            <strong>SpinPro X2</strong>
+            <small>Centrifuge · Error E17</small>
+            <dl><div><dt>Work</dt><dd>Drive module</dd></div><div><dt>Calibration</dt><dd>Required</dd></div><div><dt>Location</dt><dd>On-site</dd></div></dl>
+            <div className="scope-id"><LockKeyhole /> BB-7F3A-1042</div>
+          </div>
+        </section>
+
+        <div className="canvas-connector" aria-hidden="true"><i /><i /><i /></div>
+
+        <section className="canvas-calls">
+          <header><span>2</span> PROVIDER CALLS</header>
+          {providers.map((provider, index) => <article key={provider.name}>
+            <div className="call-name"><i>{provider.name.slice(0, 2).toUpperCase()}</i><strong>{provider.name}</strong><em><span /> {index < 2 ? "COMPLETE" : "CALLBACK"}</em></div>
+            <div className="waveform" aria-hidden="true">{provider.bars.map((height, bar) => <i key={bar} style={{ height }} />)}</div>
+            <dl><div><dt>Total</dt><dd>{provider.total}</dd></div><div><dt>Warranty</dt><dd>{provider.warranty}</dd></div><div><dt>ETA</dt><dd>{provider.eta}</dd></div></dl>
+          </article>)}
+        </section>
+
+        <div className="canvas-arrow" aria-hidden="true"><ArrowRight /></div>
+
+        <section className="canvas-award">
+          <header><span>3</span> AWARD</header>
+          <div className="award-visual-card">
+            <span className="award-trophy"><Trophy /></span>
+            <small>RECOMMENDATION</small>
+            <h2>OEM Precision</h2>
+            <ul><li><Check /> Fastest recovery</li><li><Check /> Complete scope</li><li><Check /> Strongest warranty</li></ul>
+            <div><small>EFFECTIVE COST</small><strong>$5,750</strong></div>
+            <button onClick={() => onOpen("Award memo")}>View memo <ArrowRight /></button>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section className="visual-journey" id="how-it-works">
+      <h2>From failure to award</h2>
+      <div className="journey-line">
+        {flow.map(({ icon: Icon, number, label }) => <div key={label}><b>{number}</b><span><Icon /></span><strong>{label}</strong></div>)}
+      </div>
+      <div className="case-strip" aria-label="Saadia's guided repair case">
+        <div className="case-person"><span>SA</span><strong>Saadia</strong></div>
+        <div><small>INSTRUMENT</small><strong>SpinPro X2</strong></div>
+        <ArrowRight />
+        <div><small>FAILURE</small><strong>Error E17</strong></div>
+        <ArrowRight />
+        <div><small>DOWNTIME</small><span className="downtime-bars"><i /><i /><i /><i /><i /></span></div>
+        <ArrowRight />
+        <div><small>OUTCOME</small><strong>Human award</strong></div>
+      </div>
+    </section>
+
+    <section className="visual-proof" id="challenge-proof">
+      <div className="proof-matrix">
+        <header><span>CHALLENGE PROOF</span><h2>Built honestly.</h2></header>
+        {proof.map(([label, status, state]) => <div key={label}><span>{state === "complete" ? <Check /> : <CircleAlert />}<strong>{label}</strong></span><i className={state} /><em>{status}</em></div>)}
       </div>
 
-      <div className="hero-outcomes" aria-label="BenchQuote outcomes">
-        <div><FileText /><span><strong>One scope</strong><small>Confirmed before calling</small></span></div>
-        <div><Phone /><span><strong>Three comparable calls</strong><small>Same requirements every time</small></span></div>
-        <div><ShieldCheck /><span><strong>One defensible decision</strong><small>Evidence stays attached</small></span></div>
+      <div className="evidence-orbit" aria-label="Evidence chain from scope to calls, concession and award">
+        <div className="orbit-ring" aria-hidden="true" />
+        <div className="orbit-center"><ShieldCheck /><strong>Evidence<br />chain</strong></div>
+        <div className="orbit-node orbit-scope"><FileCheck2 /><span>Scope</span></div>
+        <div className="orbit-node orbit-calls"><AudioWaveform /><span>Calls</span></div>
+        <div className="orbit-node orbit-award"><Trophy /><span>Award</span></div>
+        <div className="orbit-node orbit-proof"><Sparkles /><span>Concession</span></div>
       </div>
-    </section>
 
-    <section className="problem-split" aria-labelledby="problem-title">
-      <div><span className="split-number">01</span><div><h2 id="problem-title">Lab repair quotes are not really comparable.</h2><p>Travel, diagnostics, parts, calibration, warranty, and response time hide behind one headline price—usually scattered across phone calls and notes.</p></div></div>
-      <div><span className="split-number">02</span><div><h2>BenchQuote makes the assumptions visible.</h2><p>It holds the scope constant, preserves unknowns, and shows which call supports every price, concession, and recommendation.</p></div></div>
-    </section>
-
-    <section className="home-section" id="how-it-works">
-      <div className="home-section-heading"><span>THE CONNECTED WORKFLOW</span><h2>From broken instrument to reviewable award.</h2><p>Not four polished fragments: the same confirmed scope, call records, commercial terms, and transcript evidence move through the whole product.</p></div>
-      <div className="workflow-rail">{workflow.map(({ icon: Icon, number, title, text }) => <article key={number}><div><b>{number}</b><Icon /></div><h3>{title}</h3><p>{text}</p></article>)}</div>
-    </section>
-
-    <section className="demo-band">
-      <div className="demo-person"><span className="demo-avatar">SA</span><div><span>GUIDED DEMO USER</span><h2>Saadia Asghar</h2><p>Lab Operations Lead · City Labs</p></div></div>
-      <dl><div><dt>Equipment</dt><dd>SpinPro X2 centrifuge</dd></div><div><dt>Failure</dt><dd>Error E17 / drive module</dd></div><div><dt>Decision pressure</dt><dd>Every hour affects experiments</dd></div><div><dt>Required outcome</dt><dd>Comparable offers + calibration proof</dd></div></dl>
-      <div className="demo-next"><p>Lock one repair brief, inspect three consented demo lanes, verify a concession, and review the ranked award memo.</p><button className="home-primary" onClick={() => onOpen("Deal room")}>Resume the case <ArrowRight size={17} /></button><small>SIMULATED FIXTURES · NOT LIVE CALL EVIDENCE</small></div>
-    </section>
-
-    <section className="home-two-column" id="challenge-proof">
-      <div className="proof-ledger"><div className="home-section-heading"><span>HONEST CHALLENGE PROOF</span><h2>Seven gates. Status shown as it is.</h2></div><ol>{challengeProof.map(([label, status, state], index) => <li key={label}><b>{String(index + 1).padStart(2, "0")}</b><span>{label}</span><strong className={state}>{state === "complete" ? <Check /> : <CircleAlert />}{status}</strong></li>)}</ol></div>
-      <aside className="agent-readiness">
-        <div className="home-section-heading"><span>WHY IT IS MORE THAN A WRAPPER</span><h2>Voice changes the decision state.</h2></div>
-        <div className="agent-list"><div><Bot /><span><strong>Bounded agents</strong><small>Estimator, buyer, and provider personas</small></span><em>PROMPTS TESTED</em></div><div><LockKeyhole /><span><strong>Honesty firewall</strong><small>No invented bids or hidden authority</small></span><em>GUARDRAILS ACTIVE</em></div><div><Clock3 /><span><strong>Downtime economics</strong><small>Ranks recovery cost, not sticker price</small></span><em>DOMAIN LOGIC TESTED</em></div></div>
-        <p><ShieldCheck /> Commercial numbers, terminal outcomes, and leverage are validated outside the language model. Human approval remains the final boundary.</p>
-      </aside>
-    </section>
-
-    <section className="home-final">
-      <div><Sparkles /><h2>Stop comparing prices.<br />Compare recoveries.</h2><p>Built for laboratory managers, research operations, and procurement reviewers under downtime pressure.</p></div>
-      <button className="home-primary" onClick={() => onOpen("Scope")}>Build the repair brief <ArrowRight size={17} /></button>
-      <span><UserRound size={15} /> BenchQuote recommends. A human reviews and decides.</span>
+      <button className="proof-cta" onClick={() => onOpen("Scope")}><Mic /> Build the repair brief <ArrowRight /></button>
+      <p><ShieldCheck /> BenchQuote recommends. A human decides.</p>
     </section>
   </main>;
 }
