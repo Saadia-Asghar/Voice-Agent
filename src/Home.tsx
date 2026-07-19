@@ -2,9 +2,13 @@ import {
   ArrowRight,
   AudioWaveform,
   Check,
+  CircleAlert,
+  FileCheck2,
   LockKeyhole,
   Mic,
+  Phone,
   ShieldCheck,
+  Sparkles,
   Trophy,
 } from "lucide-react";
 import { challengeModules, SCOPE_PRINT_SHORT, verticalPain } from "./caseModel";
@@ -15,6 +19,16 @@ const providers = [
   { name: "OEM Precision", total: "$3,950", warranty: "180d", eta: "18h", outcome: "QUOTE", bars: [8,14,9,22,16,30,13,24,18,34,21,15,28,12,20,9] },
   { name: "RapidBench", total: "$3,900", warranty: "90d", eta: "36h", outcome: "NEGOTIATED", bars: [12,21,8,27,17,12,31,20,10,24,16,28,13,22,9,14] },
   { name: "MetroLab Field", total: "Decline", warranty: "—", eta: "—", outcome: "DECLINE", bars: [7,12,18,9,23,13,8,19,26,11,17,8,21,14,9,12] },
+] as const;
+
+const proof = [
+  ["Estimator loop", "Voice + doc → ScopePrint", "complete"],
+  ["Call-list provenance", "Places / Yelp / OSM shown", "complete"],
+  ["3 negotiation styles", "Three live sessions recorded", "complete"],
+  ["Structured outcomes", "Quote · decline · leverage", "complete"],
+  ["Leverage causation", "Live concession verified", "complete"],
+  ["Honesty firewall", "Server-tested", "complete"],
+  ["Closer report", "Ranked + red-flag rule", "complete"],
 ] as const;
 
 export function Home({ onOpen }: { onOpen: (step: WorkflowStep) => void }) {
@@ -92,18 +106,23 @@ export function Home({ onOpen }: { onOpen: (step: WorkflowStep) => void }) {
       </div>
     </section>
 
-    <section className="visual-value" id="what-benchdial-does">
-      <div>
-        <span>WHAT BENCHDIAL DOES</span>
-        <h2>Turns a broken instrument into a decision you can trust.</h2>
-        <p>Describe the repair once by voice or document. BenchDial locks the requirements, speaks to providers from the identical brief, turns every answer into comparable terms, then shows the evidence behind the recommended recovery plan.</p>
-        <button className="proof-cta" onClick={() => onOpen("Scope")}><Mic /> Build the repair brief <ArrowRight /></button>
+    <section className="visual-proof" id="challenge-proof">
+      <div className="proof-matrix">
+        <header><span>CHALLENGE PROOF</span><h2>Built to the brief.</h2></header>
+        {proof.map(([label, status, state]) => <div key={label}><span>{state === "complete" ? <Check /> : <CircleAlert />}<strong>{label}</strong></span><i className={state} /><em>{status}</em></div>)}
       </div>
-      <div className="value-points" aria-label="BenchDial workflow benefits">
-        <article><b>01</b><strong>One clear brief</strong><p>Equipment, fault, required work, calibration, and access details are confirmed before any call.</p></article>
-        <article><b>02</b><strong>Comparable answers</strong><p>Every provider is asked the same questions about fees, response, warranty, and coverage.</p></article>
-        <article><b>03</b><strong>Evidence, not guesses</strong><p>Quotes, callbacks, and declines are tied to call transcripts. BenchDial recommends; a person decides.</p></article>
+
+      <div className="evidence-orbit" aria-label="Evidence chain from scope to calls, concession and award">
+        <div className="orbit-ring" aria-hidden="true" />
+        <div className="orbit-center"><ShieldCheck /><strong>Evidence<br />chain</strong></div>
+        <div className="orbit-node orbit-scope"><FileCheck2 /><span>Scope</span></div>
+        <div className="orbit-node orbit-calls"><AudioWaveform /><span>Calls</span></div>
+        <div className="orbit-node orbit-award"><Trophy /><span>Award</span></div>
+        <div className="orbit-node orbit-proof"><Sparkles /><span>Concession</span></div>
       </div>
+
+      <button className="proof-cta" onClick={() => onOpen("Scope")}><Mic /> Build the repair brief <ArrowRight /></button>
+      <p><ShieldCheck /> BenchDial recommends. A human decides. <Phone size={14} /> Live Caller evidence verified.</p>
     </section>
   </main>;
 }

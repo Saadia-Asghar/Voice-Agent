@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BenchDial — Pitch Deck</title>
+  <style>
+    @page { size: A4; margin: 14mm; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      color: #17181d;
+      background: #fff;
+      font-size: 11.5px;
+      line-height: 1.45;
+    }
+    .slide {
+      page-break-after: always;
+      min-height: 250mm;
+      padding: 8mm 6mm;
+      border: 1px solid #e4e6ee;
+      border-radius: 10px;
+      margin-bottom: 8mm;
+      position: relative;
+      overflow: hidden;
+    }
+    .slide:last-child { page-break-after: auto; }
+    .kicker {
+      color: #2c5cf3;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin: 0 0 8px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      letter-spacing: -.03em;
+      line-height: 1.1;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+      letter-spacing: -.02em;
+    }
+    p { margin: 0 0 10px; color: #3f424c; }
+    .hero-line { font-size: 15px; color: #555b69; max-width: 520px; }
+    .meta { margin-top: 22px; color: #6d7180; font-size: 11px; }
+    .meta strong { color: #17181d; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+    .card {
+      border: 1px solid #dde1ee;
+      border-radius: 10px;
+      padding: 12px;
+      background: #f8f9fc;
+    }
+    .card b { display: block; color: #2c5cf3; font-size: 11px; margin-bottom: 4px; letter-spacing: .06em; }
+    .card strong { display: block; font-size: 14px; margin-bottom: 4px; }
+    .card span { color: #555b69; font-size: 11px; }
+    ul { margin: 8px 0 0; padding-left: 18px; color: #3f424c; }
+    li { margin: 4px 0; }
+    .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 16px; }
+    .flow div {
+      border: 1px solid #d7dcf0;
+      border-radius: 10px;
+      padding: 12px 10px;
+      background: linear-gradient(180deg, #f4f6ff, #fff);
+    }
+    .flow em { display: block; color: #2c5cf3; font-style: normal; font-weight: 800; font-size: 10px; }
+    .flow strong { display: block; margin: 4px 0; font-size: 13px; }
+    .flow span { color: #555b69; font-size: 10.5px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 11px; }
+    th, td { border-bottom: 1px solid #e7e8ef; text-align: left; padding: 8px 6px; vertical-align: top; }
+    th { color: #6d7180; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
+    .pill {
+      display: inline-block;
+      background: #2c5cf3;
+      color: #fff;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
+    .footer {
+      position: absolute;
+      left: 6mm; right: 6mm; bottom: 6mm;
+      display: flex; justify-content: space-between;
+      color: #8a8f9c; font-size: 10px;
+    }
+    .accent { color: #2c5cf3; }
+  </style>
+</head>
+<body>
+
+  <section class="slide">
+    <p class="kicker">Hack-Nation × ElevenLabs · The Negotiator · HN-6590</p>
+    <h1>BenchDial</h1>
+    <p class="hero-line">Voice agents that call, compare, and haggle for laboratory equipment repair — so labs never overpay on a phone-priced job again.</p>
+    <div class="grid-3">
+      <div class="card"><b>01</b><strong>Estimator</strong><span>Voice + document → one confirmed ScopePrint</span></div>
+      <div class="card"><b>02</b><strong>Caller</strong><span>Three negotiation styles, identical job every time</span></div>
+      <div class="card"><b>03</b><strong>Closer</strong><span>Verified leverage, red-flag rule, ranked award</span></div>
+    </div>
+    <p class="meta"><strong>Solo builder:</strong> Saadia Asghar &nbsp;·&nbsp; <strong>Demo:</strong> hacknation-lemon.vercel.app &nbsp;·&nbsp; <strong>Repo:</strong> github.com/Saadia-Asghar/Voice-Agent</p>
+    <div class="footer"><span>BenchDial Pitch</span><span>1 / 6</span></div>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">Problem</p>
+    <h2>What we solved</h2>
+    <p>Phone-priced markets hide the real cost until someone has the stamina to call five to eight operators. The Negotiator brief documents this for movers — identical work, 5.6× quote spreads, sight-unseen estimates that blow up later.</p>
+    <p>The same failures hit <strong>laboratory equipment repair</strong>:</p>
+    <div class="grid-3">
+      <div class="card"><b>Opaque pricing</b><strong>Incomparable quotes</strong><span>Call-out, calibration, warranty, and response assumptions differ wildly.</span></div>
+      <div class="card"><b>Unreliable estimates</b><strong>Sight-unseen risk</strong><span>Incomplete intake is why final bills jump after commitment.</span></div>
+      <div class="card"><b>No way to shop</b><strong>One call at a time</strong><span>Nobody has hours to run three honest negotiations while a centrifuge is down.</span></div>
+    </div>
+    <ul>
+      <li>Labs pay twice: experiment downtime <em>and</em> a misleading lowball.</li>
+      <li>Software historically cannot dial the market — until voice agents.</li>
+    </ul>
+    <div class="footer"><span>BenchDial Pitch</span><span>2 / 6</span></div>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">Audience</p>
+    <h2>Who it is for</h2>
+    <div class="grid-2">
+      <div class="card">
+        <b>Primary</b>
+        <strong>Lab operations lead</strong>
+        <span>Persona: Saadia Asghar, City Labs. Owns shared instruments. Needs the bench online without approving a quote that omits calibration or hides fees.</span>
+      </div>
+      <div class="card">
+        <b>Secondary</b>
+        <strong>Procurement / research ops</strong>
+        <span>Need auditable vendor conversations and comparable terms — not a dashboard of apples-to-oranges numbers.</span>
+      </div>
+    </div>
+    <p style="margin-top:16px"><span class="pill">Vertical</span> &nbsp; Laboratory equipment repair (B2B) — same Negotiator loop that generalizes to movers, contractors, auto repair, and medical bills.</p>
+    <div class="footer"><span>BenchDial Pitch</span><span>3 / 6</span></div>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">Solution &amp; flow</p>
+    <h2>What the app does</h2>
+    <div class="flow">
+      <div><em>STEP 1</em><strong>Estimator</strong><span>ElevenLabs voice interview + service report → shared JSON job spec. User confirms ScopePrint before any call.</span></div>
+      <div><em>STEP 2</em><strong>Caller</strong><span>Same ScopePrint to OEM, hidden-fee, and stonewaller styles. Outcomes: quote, negotiated terms, or decline.</span></div>
+      <div><em>STEP 3</em><strong>Closer</strong><span>Verified competing-bid leverage, 30% red-flag rule, downtime-adjusted ranking, concession ledger.</span></div>
+      <div><em>STEP 4</em><strong>Award</strong><span>Plain-language recommend with transcript receipts. Human must approve — app cannot purchase.</span></div>
+    </div>
+    <table>
+      <thead><tr><th>User action</th><th>What happens</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td>Upload report + lock scope</td><td>Canonical ScopePrint hashed and reused</td><td>Attacks sight-unseen blowups</td></tr>
+        <tr><td>Start live / fixture lanes</td><td>Three distinct negotiation styles</td><td>Mandatory challenge coverage</td></tr>
+        <tr><td>Review Deal Room</td><td>Itemized compare + red-flag + ledger</td><td>Price moves from leverage, not a script label</td></tr>
+        <tr><td>Open Award Memo</td><td>Ranked deal + citations</td><td>Judges see evidence, not a score alone</td></tr>
+      </tbody>
+    </table>
+    <div class="footer"><span>BenchDial Pitch</span><span>4 / 6</span></div>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">Differentiation</p>
+    <h2>Why this is a negotiator — not a form</h2>
+    <div class="grid-2">
+      <div class="card">
+        <b>Honesty Firewall</b>
+        <strong>No invented bids</strong>
+        <span>Server-side <code>check_leverage</code> must verify a competing term before the agent may speak it.</span>
+      </div>
+      <div class="card">
+        <b>Provenance labels</b>
+        <strong>LIVE vs FIXTURE</strong>
+        <span>Fixtures never become RECORDED LIVE RUN. Only a signed webhook with a transcript can.</span>
+      </div>
+      <div class="card">
+        <b>ScopePrint</b>
+        <strong>Identical job every call</strong>
+        <span>Voice and documents converge before dialing — configuration for the vertical, not a rewrite.</span>
+      </div>
+      <div class="card">
+        <b>Human boundary</b>
+        <strong>Recommend, don’t bind</strong>
+        <span>Award memo requires review. BenchDial cannot purchase or accept a contract.</span>
+      </div>
+    </div>
+    <div class="footer"><span>BenchDial Pitch</span><span>5 / 6</span></div>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">Stack &amp; ask</p>
+    <h2>How it is built</h2>
+    <ul>
+      <li><strong>UI:</strong> React + TypeScript + Vite — Estimator → Caller → Closer → Award</li>
+      <li><strong>Voice:</strong> ElevenLabs Agents (intake + Buyer/Closer) over WebRTC</li>
+      <li><strong>Backend:</strong> Supabase Auth, Edge Functions (tokens, HMAC webhooks, call-tools), Postgres evidence ledger</li>
+      <li><strong>Logic:</strong> Zod contracts, deterministic ranking, 30% below-median red-flag rule outside the LLM</li>
+    </ul>
+    <div class="grid-2" style="margin-top:16px">
+      <div class="card">
+        <b>One-line pitch</b>
+        <strong>Turn one verified lab-repair brief into comparable AI voice negotiations and an evidence-backed recovery decision.</strong>
+      </div>
+      <div class="card">
+        <b>Links</b>
+        <span><strong>Live:</strong> https://hacknation-lemon.vercel.app<br/>
+        <strong>GitHub:</strong> https://github.com/Saadia-Asghar/Voice-Agent<br/>
+        <strong>Team:</strong> HN-6590 · Solo · Saadia Asghar</span>
+      </div>
+    </div>
+    <p style="margin-top:18px;font-size:14px"><span class="accent"><strong>BenchDial recommends. A human decides. The bench gets back online.</strong></span></p>
+    <div class="footer"><span>BenchDial Pitch</span><span>6 / 6</span></div>
+  </section>
+
+</body>
+</html>

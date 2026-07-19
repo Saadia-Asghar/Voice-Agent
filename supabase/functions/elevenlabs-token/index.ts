@@ -21,12 +21,21 @@ Deno.serve(async (request) => {
   if (!url || !anonKey || !serviceKey) return Response.json({ error: "Persistence unavailable." }, { status: 500, headers: corsHeaders });
   const { createClient } = await import("npm:@supabase/supabase-js@2");
   const db = createClient(url, serviceKey, { auth: { persistSession: false } });
+  const requestUrl = new URL(request.url);
+  const intakeAgentId = Deno.env.get("ELEVENLABS_INTAKE_AGENT_ID");
+  const requestedAgentId = requestUrl.searchParams.get("agent_id");
+  const providerNameEarly = requestUrl.searchParams.get("provider");
+  // Demo: Estimator/intake token stays open without a buyer login. Any provider= live Buyer lane still requires auth.
+  const openDemoIntake = request.method === "GET" && !providerNameEarly && (!intakeAgentId || requestedAgentId === intakeAgentId);
+
   const authorization = request.headers.get("Authorization");
   const accessToken = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
-  if (!accessToken) return Response.json({ error: "Authentication required." }, { status: 401, headers: corsHeaders });
-  const auth = createClient(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data: { user }, error: authError } = await auth.auth.getUser(accessToken);
-  if (authError || !user) return Response.json({ error: "Invalid or expired session." }, { status: 401, headers: corsHeaders });
+  if (!openDemoIntake) {
+    if (!accessToken) return Response.json({ error: "Authentication required." }, { status: 401, headers: corsHeaders });
+    const auth = createClient(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
+    const { data: { user }, error: authError } = await auth.auth.getUser(accessToken);
+    if (authError || !user) return Response.json({ error: "Invalid or expired session." }, { status: 401, headers: corsHeaders });
+  }
 
   if (request.method === "POST") {
     const input = await request.json().catch(() => null) as { action?: string; callId?: string; proof?: string; conversationId?: string } | null;
@@ -89,18 +98,17 @@ Deno.serve(async (request) => {
   if (request.method !== "GET") return Response.json({ error: "Method not allowed." }, { status: 405, headers: corsHeaders });
   const apiKey = Deno.env.get("ELEVENLABS_API_KEY");
   if (!apiKey) return Response.json({ error: "Server is missing ElevenLabs configuration." }, { status: 500, headers: corsHeaders });
-  const requestUrl = new URL(request.url);
-  const agentId = requestUrl.searchParams.get("agent_id");
+  const agentId = requestedAgentId;
   if (!agentId || !/^agent_[a-zA-Z0-9]+$/.test(agentId)) return Response.json({ error: "Invalid agent_id." }, { status: 400, headers: corsHeaders });
 
-  const allowedAgentIds = [Deno.env.get("ELEVENLABS_INTAKE_AGENT_ID"), Deno.env.get("ELEVENLABS_BUYER_AGENT_ID"), Deno.env.get("ELEVENLABS_VENDOR_OEM_AGENT_ID"), Deno.env.get("ELEVENLABS_VENDOR_INDEPENDENT_AGENT_ID"), Deno.env.get("ELEVENLABS_VENDOR_STONEWALLER_AGENT_ID")].filter(Boolean);
+  const allowedAgentIds = [intakeAgentId, Deno.env.get("ELEVENLABS_BUYER_AGENT_ID"), Deno.env.get("ELEVENLABS_VENDOR_OEM_AGENT_ID"), Deno.env.get("ELEVENLABS_VENDOR_INDEPENDENT_AGENT_ID"), Deno.env.get("ELEVENLABS_VENDOR_STONEWALLER_AGENT_ID")].filter(Boolean);
   if (allowedAgentIds.length && !allowedAgentIds.includes(agentId)) return Response.json({ error: "Agent is not allowlisted." }, { status: 403, headers: corsHeaders });
 
   const upstream = await fetch(`https://api.elevenlabs.io/v1/convai/conversation/token?agent_id=${encodeURIComponent(agentId)}`, { headers: { "xi-api-key": apiKey } });
   if (!upstream.ok) return Response.json({ error: "ElevenLabs token request failed." }, { status: 502, headers: corsHeaders });
   const body = await upstream.json();
-  const providerName = requestUrl.searchParams.get("provider");
-  if (!providerName) return Response.json({ token: body.token }, { headers: { ...corsHeaders, "Cache-Control": "no-store" } });
+  const providerName = providerNameEarly;
+  if (!providerName) return Response.json({ token: body.token, demoOpenIntake: openDemoIntake || undefined }, { headers: { ...corsHeaders, "Cache-Control": "no-store" } });
   if (agentId !== Deno.env.get("ELEVENLABS_BUYER_AGENT_ID") || providerName.length > 80) return Response.json({ error: "Live evidence sessions require the Buyer agent and a valid provider." }, { status: 400, headers: corsHeaders });
 
   const scopeHash = "BD-7F3A-1042";

@@ -102,7 +102,7 @@ export function ScopeStudio({ confirmedScope, onConfirm, onReset, onOpenCalls }:
         <CheckRow ok={completeness === 9} label={`Required fields completed / ${completeness} of 9`} />
         <CheckRow ok={conflictsResolved} label={conflictsResolved ? "Conflicts resolved" : "2 conflicts unresolved"} />
         <CheckRow ok={hasDocument} label={hasDocument ? `Document attached: ${draft.documentName}` : "Document evidence required"} />
-        <CheckRow ok={draft.voiceInterviewTouched || Boolean(draft.symptoms.trim())} label={draft.voiceInterviewTouched ? "Live ElevenLabs voice interview started" : "Voice-path fields present (start live interview when unlocking billable minutes)"} />
+        <CheckRow ok={draft.voiceInterviewTouched || Boolean(draft.symptoms.trim())} label={draft.voiceInterviewTouched ? "Live ElevenLabs voice interview started" : "Start live interview — Estimator voice is open for demo"} />
         <CheckRow ok label="Approval authority identified" />
         {!draft.voiceInterviewTouched && <button type="button" className="text-button" onClick={() => update({ voiceInterviewTouched: true })}>Mark voice-path fields ready for fixture walkthrough</button>}
         <div className="scope-version"><span>Scope version</span><strong>3</strong></div>

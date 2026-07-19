@@ -1,0 +1,23 @@
+[Script Info]
+Title: Demo UX
+ScriptType: v4.00+
+PlayResX: 1440
+PlayResY: 900
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Caption,Segoe UI,34,&H00FFFFFF,&H000000FF,&H00101010,&HAA000000,-1,0,0,0,100,100,0,0,3,0,0,2,36,36,44,1
+Style: Badge,Segoe UI,26,&H00FFFFFF,&H000000FF,&H00F35C2C,&H00000000,-1,0,0,0,100,100,0,0,3,0,0,7,24,24,24,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:07.00,Badge,,0,0,0,,DEMO · UX
+Dialogue: 0,0:00:00.00,0:00:07.00,Caption,,0,0,0,,One repair brief · three comparable calls · one human award
+Dialogue: 0,0:00:07.00,0:00:20.00,Badge,,0,0,0,,01 ESTIMATOR
+Dialogue: 0,0:00:07.00,0:00:20.00,Caption,,0,0,0,,Scroll the scope form · upload · resolve conflicts · lock
+Dialogue: 0,0:00:20.00,0:00:32.00,Badge,,0,0,0,,02 CALLER
+Dialogue: 0,0:00:20.00,0:00:32.00,Caption,,0,0,0,,Scroll discovery + three negotiation lanes + outcomes
+Dialogue: 0,0:00:32.00,0:00:42.00,Badge,,0,0,0,,03 CLOSER
+Dialogue: 0,0:00:32.00,0:00:42.00,Caption,,0,0,0,,Scroll comparison · red-flag rule · concession ledger
+Dialogue: 0,0:00:42.00,0:00:50.00,Badge,,0,0,0,,AWARD
+Dialogue: 0,0:00:42.00,0:00:50.00,Caption,,0,0,0,,Scroll ranked deal + transcript receipts

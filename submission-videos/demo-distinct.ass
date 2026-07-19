@@ -1,0 +1,23 @@
+[Script Info]
+Title: Demo UX distinct
+ScriptType: v4.00+
+PlayResX: 1440
+PlayResY: 900
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Caption,Segoe UI,32,&H00FFFFFF,&H000000FF,&H00101010,&HAA000000,-1,0,0,0,100,100,0,0,3,0,0,2,36,36,44,1
+Style: Badge,Segoe UI,24,&H00FFFFFF,&H000000FF,&H00F35C2C,&H00000000,-1,0,0,0,100,100,0,0,3,0,0,7,24,24,24,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:07.00,Badge,,0,0,0,,DEMO · PRODUCT UX
+Dialogue: 0,0:00:00.00,0:00:07.00,Caption,,0,0,0,,User journey — what Saadia sees and clicks
+Dialogue: 0,0:00:07.00,0:00:18.00,Badge,,0,0,0,,ESTIMATOR UX
+Dialogue: 0,0:00:07.00,0:00:18.00,Caption,,0,0,0,,Upload · resolve conflicts · lock ScopePrint before calls
+Dialogue: 0,0:00:18.00,0:00:30.00,Badge,,0,0,0,,CALLER UX
+Dialogue: 0,0:00:18.00,0:00:30.00,Caption,,0,0,0,,Scroll 3 lanes — quote · negotiated · decline
+Dialogue: 0,0:00:30.00,0:00:40.00,Badge,,0,0,0,,CLOSER UX
+Dialogue: 0,0:00:30.00,0:00:40.00,Caption,,0,0,0,,Compare table · red-flag · concession ledger
+Dialogue: 0,0:00:40.00,0:00:56.00,Badge,,0,0,0,,AWARD UX
+Dialogue: 0,0:00:40.00,0:00:56.00,Caption,,0,0,0,,Ranked memo + receipts — human still approves
