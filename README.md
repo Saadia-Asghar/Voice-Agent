@@ -27,7 +27,7 @@ pnpm build
 1. Create the Estimator agent from `elevenlabs/intake-agent.md`.
 2. Create a Supabase project and run `supabase db push`.
 3. Add `ELEVENLABS_API_KEY` and `ELEVENLABS_INTAKE_AGENT_ID` as Supabase function secrets.
-4. Deploy with `supabase functions deploy elevenlabs-token` and `supabase functions deploy elevenlabs-webhook --no-verify-jwt`.
+4. Deploy `elevenlabs-token`, `elevenlabs-webhook --no-verify-jwt`, and `call-tools --no-verify-jwt`.
 5. Copy `.env.example` to `.env.local` and fill the public `VITE_` values.
 6. Open Scope and start the live interview. The ElevenLabs API key remains server-side.
 

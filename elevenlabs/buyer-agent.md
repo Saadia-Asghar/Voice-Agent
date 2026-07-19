@@ -26,7 +26,7 @@ End by reading back all known line items and unknowns, then call exactly one ter
 ## Server tools
 
 - `write_quote_field(call_id, field, value, evidence_turn)`
-- `check_leverage(call_id, requested_claim)`
+- `check_leverage(call_id, field, claimed_value)`
 - `record_concession(call_id, field, before, after, leverage_event_id, evidence_turn)`
 - `record_quote(call_id, itemized_quote)`
 - `record_callback(call_id, committed_at, contact)`
