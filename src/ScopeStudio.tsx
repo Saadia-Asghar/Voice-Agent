@@ -1,13 +1,15 @@
 import { useMemo, useState } from "react";
 import { AlertTriangle, Check, FileUp, LockKeyhole, Mic, RotateCcw } from "lucide-react";
 import { VoiceIntake } from "./VoiceIntake";
+import { useAuth } from "./Auth";
 import {
   applyConflictResolutions,
   confirmScopePrint,
   defaultScopeDraft,
-  extractScopeFromDocument,
+  extractScopeFromFile,
   type ConfirmedScopePrint,
   type ConflictChoice,
+  type ExtractSource,
   type ScopeDraft,
 } from "./caseModel";
 
@@ -19,8 +21,11 @@ type Props = {
 };
 
 export function ScopeStudio({ confirmedScope, onConfirm, onReset, onOpenCalls }: Props) {
+  const { session } = useAuth();
   const [draft, setDraft] = useState<ScopeDraft>(defaultScopeDraft);
   const [locking, setLocking] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [extractSource, setExtractSource] = useState<ExtractSource | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const resolved = useMemo(() => applyConflictResolutions(draft), [draft]);
@@ -34,8 +39,19 @@ export function ScopeStudio({ confirmedScope, onConfirm, onReset, onOpenCalls }:
 
   const onUpload = (file: File | undefined) => {
     if (!file) return;
-    setDraft((current) => extractScopeFromDocument(file.name, current));
     setError(null);
+    setExtracting(true);
+    void (async () => {
+      try {
+        const result = await extractScopeFromFile(file, draft, session?.access_token);
+        setDraft(result.draft);
+        setExtractSource(result.source);
+      } catch (reason) {
+        setError(reason instanceof Error ? reason.message : "Document extraction failed.");
+      } finally {
+        setExtracting(false);
+      }
+    })();
   };
 
   const lockScope = async () => {
@@ -60,15 +76,26 @@ export function ScopeStudio({ confirmedScope, onConfirm, onReset, onOpenCalls }:
     <div className="scope-main">
       <section className="workflow-panel">
         <div className="section-title"><div><span className="eyebrow">Voice interview · ElevenLabs Agents</span><h2>Describe the failure once.</h2></div><Mic /></div>
-        <VoiceIntake onStarted={() => update({ voiceInterviewTouched: true })} />
+        <VoiceIntake
+          onStarted={() => update({ voiceInterviewTouched: true })}
+          onDraftPatch={(patch) => setDraft((current) => ({ ...current, ...patch, voiceInterviewTouched: true }))}
+        />
       </section>
       <section className="workflow-panel">
         <div className="section-title"><div><span className="eyebrow">Document intake · same JSON schema</span><h2>Add a service report or prior quote.</h2></div><FileUp /></div>
         <label className="upload-zone">
-          <input type="file" accept=".pdf,.png,.jpg,.jpeg" onChange={(event) => onUpload(event.target.files?.[0])} />
+          <input type="file" accept=".pdf,.png,.jpg,.jpeg,.txt" disabled={extracting} onChange={(event) => onUpload(event.target.files?.[0])} />
           <FileUp />
-          <strong>{draft.documentName ?? "Drop PDF or photo here"}</strong>
-          <small>{draft.documentName ? "Extracted into the shared job-spec schema (demo parser)" : "PDF, JPG or PNG — maps to the same fields as voice"}</small>
+          <strong>{extracting ? "Extracting fields…" : draft.documentName ?? "Drop PDF or photo here"}</strong>
+          <small>
+            {extractSource === "model"
+              ? "Extracted by model into the shared job-spec schema"
+              : extractSource === "local-parse"
+                ? "Parsed locally from document text into the shared schema"
+                : draft.documentName
+                  ? "Demo seed applied — model extract unavailable, review before lock"
+                  : "PDF, JPG, PNG or TXT — maps to the same fields as voice"}
+          </small>
         </label>
       </section>
       <section className="workflow-panel">

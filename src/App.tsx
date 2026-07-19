@@ -1,6 +1,6 @@
 import { lazy, Suspense, useMemo, useState } from "react";
 import { Activity, AudioWaveform, Check, ChevronRight, CircleAlert, FileText, LockKeyhole, Mic, Phone, ShieldCheck, Sparkles } from "lucide-react";
-import { SCOPE_PRINT_SHORT, concessions, quotes, type ConfirmedScopePrint, verticalPain } from "./caseModel";
+import { SCOPE_PRINT_SHORT, buildChallengeProof, concessions, quotes, type ConfirmedScopePrint, verticalPain } from "./caseModel";
 import { currency, isSuspiciouslyLowQuote, knownCashTotal, rankQuotes } from "./domain";
 import { Home } from "./Home";
 import { labEquipmentRepair } from "./verticalConfig";
@@ -28,6 +28,8 @@ export default function App() {
   const [confirmedScope, setConfirmedScope] = useState<ConfirmedScopePrint | null>(null);
   const [customQuotes, setCustomQuotes] = useState(quotes);
   const [customConcessions, setCustomConcessions] = useState(concessions);
+  const [recordedLanes, setRecordedLanes] = useState<number[]>([]);
+  const [liveLeverageVerified, setLiveLeverageVerified] = useState(false);
 
   const ranked = useMemo(
     () => rankQuotes(customQuotes, { downtimeCostPerHour: downtime, requiredExcludedServices: { loaner: 700, warranty: 300, "callout fee": 400 } }),
@@ -43,6 +45,14 @@ export default function App() {
   );
   const scopeId = confirmedScope?.shortId ?? SCOPE_PRINT_SHORT;
   const cashTotals = customQuotes.map((quote) => knownCashTotal(quote)).filter((total): total is number => total !== null);
+  const challengeProof = useMemo(
+    () => buildChallengeProof({
+      confirmedScope,
+      recordedLiveCount: recordedLanes.length,
+      liveLeverageVerified,
+    }),
+    [confirmedScope, recordedLanes.length, liveLeverageVerified],
+  );
 
   const openStep = (step: Screen) => {
     setActive(step);
@@ -67,7 +77,7 @@ export default function App() {
         ))}
       </nav>}
 
-      {active === "Home" ? <Home onOpen={(step) => openStep(step)} /> : active === "Scope" ? <Suspense fallback={<main className="workflow-loading">Loading Estimator…</main>}><ScopeStudio confirmedScope={confirmedScope} onConfirm={setConfirmedScope} onReset={() => setConfirmedScope(null)} onOpenCalls={() => setActive("Call room")} /></Suspense> : active === "Call room" ? <Suspense fallback={<main className="workflow-loading">Loading Caller…</main>}><CallRoom confirmedScope={confirmedScope} customQuotes={customQuotes} setCustomQuotes={setCustomQuotes} setCustomConcessions={setCustomConcessions} /></Suspense> : active === "Award memo" ? <Suspense fallback={<main className="workflow-loading">Loading Award Memo…</main>}><AwardMemo downtime={downtime} confirmedScope={confirmedScope} customQuotes={customQuotes} /></Suspense> : <main id="top">
+      {active === "Home" ? <Home onOpen={(step) => openStep(step)} proof={challengeProof} /> : active === "Scope" ? <Suspense fallback={<main className="workflow-loading">Loading Estimator…</main>}><ScopeStudio confirmedScope={confirmedScope} onConfirm={setConfirmedScope} onReset={() => setConfirmedScope(null)} onOpenCalls={() => setActive("Call room")} /></Suspense> : active === "Call room" ? <Suspense fallback={<main className="workflow-loading">Loading Caller…</main>}><CallRoom confirmedScope={confirmedScope} customQuotes={customQuotes} setCustomQuotes={setCustomQuotes} setCustomConcessions={setCustomConcessions} recordedLanes={recordedLanes} setRecordedLanes={setRecordedLanes} onLiveLeverage={() => setLiveLeverageVerified(true)} /></Suspense> : active === "Award memo" ? <Suspense fallback={<main className="workflow-loading">Loading Award Memo…</main>}><AwardMemo downtime={downtime} confirmedScope={confirmedScope} customQuotes={customQuotes} customConcessions={customConcessions} recordedLiveCount={recordedLanes.length} /></Suspense> : <main id="top">
         <section className="hero-card">
           <div>
             <span className="kicker"><Sparkles size={14} /> 03 · The Closer</span>
@@ -132,7 +142,7 @@ export default function App() {
           <section className="panel">
             <div className="panel-heading compact"><div><span className="eyebrow">Concession ledger</span><h2>Price and terms moved because of leverage.</h2></div><ShieldCheck /></div>
             <ol className="timeline">
-              {customConcessions.map((event, index) => <li key={event.at}><span className="time">{event.at}</span><span className="timeline-node">{index + 1}</span><div><strong>{event.label}</strong><p>{event.detail}</p></div></li>)}
+              {customConcessions.map((event, index) => <li key={`${event.at}-${event.label}`}><span className="time">{event.at}</span><span className="timeline-node">{index + 1}</span><div><strong>{event.label}</strong><p>{event.detail}</p></div></li>)}
             </ol>
             <button className="secondary-button" onClick={() => setDrawer("evidence")}><FileText size={16} /> Open transcript evidence</button>
           </section>

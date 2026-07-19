@@ -1,21 +1,40 @@
 import { CheckCircle2, Download, FileAudio, FileText, ShieldCheck, TriangleAlert } from "lucide-react";
 import { currency, rankQuotes } from "./domain";
-import { SCOPE_PRINT_SHORT, concessions, type ConfirmedScopePrint } from "./caseModel";
+import { SCOPE_PRINT_SHORT, type ConcessionEvent, type ConfirmedScopePrint } from "./caseModel";
 import type { ServiceQuote } from "./domain";
 
-export function AwardMemo({ downtime, confirmedScope, customQuotes }: { downtime: number; confirmedScope: ConfirmedScopePrint | null; customQuotes: ServiceQuote[] }) {
+export function AwardMemo({
+  downtime,
+  confirmedScope,
+  customQuotes,
+  customConcessions,
+  recordedLiveCount,
+}: {
+  downtime: number;
+  confirmedScope: ConfirmedScopePrint | null;
+  customQuotes: ServiceQuote[];
+  customConcessions: ConcessionEvent[];
+  recordedLiveCount: number;
+}) {
   const ranked = rankQuotes(customQuotes, { downtimeCostPerHour: downtime, requiredExcludedServices: { loaner: 700, warranty: 300, "callout fee": 400 } });
   const recommendation = ranked.find((entry) => entry.effective !== null);
   const scopeId = confirmedScope?.shortId ?? SCOPE_PRINT_SHORT;
+  const provenanceLabel = recordedLiveCount >= 3
+    ? "RECORDED LIVE RUN"
+    : recordedLiveCount > 0
+      ? `${recordedLiveCount}/3 LIVE RECORDED`
+      : "DEMO EVIDENCE";
+  const provenanceClass = recordedLiveCount > 0 ? "provenance recorded" : "provenance fixture";
+  const winner = recommendation?.quote;
 
   return <main className="workflow-screen memo-screen">
     <section className="memo-hero">
       <div>
         <span className="eyebrow">Closer output · Decision record / ScopePrint {scopeId}</span>
         <h1>A ranked deal a human can defend.</h1>
-        <p>Recommend {recommendation?.quote.provider}: fastest complete recovery with calibration, loaner coverage, and the strongest warranty — subject to human approval. Citations come from call transcripts, not a score alone.</p>
+        <p>Recommend {winner?.provider ?? "a complete offer"}: downtime-adjusted ranking with transcript receipts — subject to human approval. Citations come from call evidence, not a score alone.</p>
       </div>
-      <div className="memo-actions"><span className="provenance fixture">DEMO EVIDENCE</span><button className="secondary-button" onClick={() => window.print()}><Download size={16} /> Export / print</button></div>
+      <div className="memo-actions"><span className={provenanceClass}>{provenanceLabel}</span><button className="secondary-button" onClick={() => window.print()}><Download size={16} /> Export / print</button></div>
     </section>
 
     <div className="memo-grid">
@@ -24,15 +43,17 @@ export function AwardMemo({ downtime, confirmedScope, customQuotes }: { downtime
         <h2>The operationally cheapest complete offer.</h2>
         <div className="memo-number"><span>Downtime-adjusted cost</span><strong>{currency(recommendation?.effective ?? null)}</strong><small>Using ${downtime}/hour downtime</small></div>
         <ul>
-          <li><CheckCircle2 /> 100% confirmed-scope match</li>
-          <li><CheckCircle2 /> Calibration and performance verification included</li>
-          <li><CheckCircle2 /> 18-hour response and 180-day warranty</li>
+          <li><CheckCircle2 /> {winner?.scopeMatch ?? 0}% confirmed-scope match</li>
+          <li><CheckCircle2 /> {winner?.calibration.inclusion === "included" ? "Calibration included" : `Calibration ${currency(winner?.calibration.amount ?? null)}`}</li>
+          <li><CheckCircle2 /> {winner?.responseHours == null ? "Response unresolved" : `${winner.responseHours}-hour response`} · {winner?.warrantyDays == null ? "warranty unresolved" : `${winner.warrantyDays}-day warranty`}</li>
           <li><ShieldCheck /> No invented bid or acceptance authority used</li>
         </ul>
         <div className="concession-summary">
           <span className="eyebrow">Negotiation receipts</span>
-          <p>RapidBench terms moved mid-call after verified OEM leverage: call-out $650→$450, response 48h→36h, warranty added.</p>
-          <ol>{concessions.map((event) => <li key={event.at}><strong>{event.label}</strong> — {event.detail}</li>)}</ol>
+          <p>{recordedLiveCount > 0
+            ? `${recordedLiveCount} webhook-verified live lane${recordedLiveCount === 1 ? "" : "s"} feed this memo. Concessions below reflect live tool writes when present.`
+            : "Fixture walkthrough: terms illustrate leverage causation until live lanes are verified."}</p>
+          <ol>{customConcessions.map((event) => <li key={`${event.at}-${event.label}`}><strong>{event.label}</strong> — {event.detail}</li>)}</ol>
         </div>
       </section>
       <section className="workflow-panel">
@@ -53,7 +74,7 @@ export function AwardMemo({ downtime, confirmedScope, customQuotes }: { downtime
     <section className="workflow-panel">
       <span className="eyebrow">Evidence receipts</span>
       <h2>Recommendation claims trace to the calls.</h2>
-      <div className="evidence-receipts">{customQuotes.map((quote) => <article key={quote.provider}><FileAudio /><div><strong>{quote.provider}</strong><blockquote>“{quote.evidence[0]?.quote ?? "No transcript evidence."}”</blockquote><small><FileText size={13} /> Transcript at {quote.evidence[0]?.at ?? "—"} / {confirmedScope ? `ScopePrint ${scopeId}` : "simulated fixture"}</small></div></article>)}</div>
+      <div className="evidence-receipts">{customQuotes.map((quote) => <article key={quote.provider}><FileAudio /><div><strong>{quote.provider}</strong><blockquote>“{quote.evidence[0]?.quote ?? "No transcript evidence."}”</blockquote><small><FileText size={13} /> Transcript at {quote.evidence[0]?.at ?? "—"} / {confirmedScope ? `ScopePrint ${scopeId}` : "simulated fixture"}{recordedLiveCount > 0 ? " · live lanes in session" : ""}</small></div></article>)}</div>
     </section>
   </main>;
 }

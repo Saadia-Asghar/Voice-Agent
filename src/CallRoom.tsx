@@ -110,18 +110,23 @@ export function CallRoom({
   customQuotes,
   setCustomQuotes,
   setCustomConcessions,
+  recordedLanes,
+  setRecordedLanes,
+  onLiveLeverage,
 }: { 
   confirmedScope: ConfirmedScopePrint | null;
   customQuotes: ServiceQuote[];
   setCustomQuotes: React.Dispatch<React.SetStateAction<ServiceQuote[]>>;
   setCustomConcessions: React.Dispatch<React.SetStateAction<any[]>>;
+  recordedLanes: number[];
+  setRecordedLanes: React.Dispatch<React.SetStateAction<number[]>>;
+  onLiveLeverage?: () => void;
 }) {
   const { startSession, endSession } = useConversationControls();
   const { status: liveStatus } = useConversationStatus();
   const [selected, setSelected] = useState(0);
   const [running, setRunning] = useState<number | null>(null);
   const [liveLane, setLiveLane] = useState<number | null>(null);
-  const [recordedLanes, setRecordedLanes] = useState<number[]>([]);
   const [pendingLanes, setPendingLanes] = useState<number[]>([]);
   const [sessions, setSessions] = useState<Record<number, EvidenceSession>>({});
   const [liveError, setLiveError] = useState<string | null>(null);
@@ -144,12 +149,28 @@ export function CallRoom({
     if (!supabaseUrl || !publishableKey || !buyerAgentId) return setLiveError("Live Buyer/Closer configuration is unavailable.");
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
-      const response = await fetch(`${supabaseUrl}/functions/v1/elevenlabs-token?agent_id=${encodeURIComponent(buyerAgentId)}&provider=${encodeURIComponent(providerCallList[index].name)}`, { headers: { Authorization: `Bearer ${authSession.access_token}`, apikey: publishableKey } });
+      const response = await fetch(`${supabaseUrl}/functions/v1/elevenlabs-token`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${authSession.access_token}`,
+          apikey: publishableKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "bootstrap",
+          agentId: buyerAgentId,
+          provider: providerCallList[index].name,
+          scopeHash: confirmedScope!.canonicalHash,
+          scopeShortId: confirmedScope!.shortId,
+          specification: confirmedScope!.specification,
+          scopeJson: confirmedScope!.scopeJson,
+        }),
+      });
       if (!response.ok) throw new Error("Could not authorize the live Buyer/Closer session.");
       const { token, callId, sessionProof } = await response.json() as { token: string; callId: string; sessionProof: string };
       setSessions((current) => ({ ...current, [index]: { callId, proof: sessionProof } }));
       setLiveLane(index);
-      await startSession({
+      startSession({
         conversationToken: token,
         userId: crypto.randomUUID(),
         dynamicVariables: {
@@ -229,6 +250,7 @@ export function CallRoom({
           detail: `Field '${c.field_name}' changed from ${JSON.stringify(c.before_value)} to ${JSON.stringify(c.after_value)}.`
         }));
         setCustomConcessions((current) => [...current, ...mappedConcessions]);
+        onLiveLeverage?.();
       }
     } catch (reason) {
       setLiveError(reason instanceof Error ? reason.message : "Evidence verification failed.");

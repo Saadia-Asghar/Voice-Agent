@@ -11,7 +11,7 @@ import {
   Sparkles,
   Trophy,
 } from "lucide-react";
-import { challengeModules, SCOPE_PRINT_SHORT, verticalPain } from "./caseModel";
+import { challengeModules, SCOPE_PRINT_SHORT, verticalPain, type ProofRow } from "./caseModel";
 
 type WorkflowStep = "Scope" | "Call room" | "Deal room" | "Award memo";
 
@@ -21,17 +21,7 @@ const providers = [
   { name: "MetroLab Field", total: "Decline", warranty: "—", eta: "—", outcome: "DECLINE", bars: [7,12,18,9,23,13,8,19,26,11,17,8,21,14,9,12] },
 ] as const;
 
-const proof = [
-  ["Estimator loop", "Voice + doc → ScopePrint", "complete"],
-  ["Call-list provenance", "Places / Yelp / OSM shown", "complete"],
-  ["3 negotiation styles", "Three live sessions recorded", "complete"],
-  ["Structured outcomes", "Quote · decline · leverage", "complete"],
-  ["Leverage causation", "Live concession verified", "complete"],
-  ["Honesty firewall", "Server-tested", "complete"],
-  ["Closer report", "Ranked + red-flag rule", "complete"],
-] as const;
-
-export function Home({ onOpen }: { onOpen: (step: WorkflowStep) => void }) {
+export function Home({ onOpen, proof }: { onOpen: (step: WorkflowStep) => void; proof: ProofRow[] }) {
   return <main className="home-screen visual-home" id="home">
     <section className="visual-hero">
       <div className="visual-hero-copy">
