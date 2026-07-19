@@ -1,4 +1,4 @@
-# BenchBid: ElevenLabs Negotiator Winning Strategy
+# ScopeDial: ElevenLabs Negotiator Winning Strategy
 
 Generated: 19 July 2026  
 Scope: Hack-Nation Challenge 01, The Negotiator  
@@ -6,9 +6,9 @@ Recommendation confidence: High for challenge interpretation; medium for competi
 
 ## Executive decision
 
-Build **BenchBid**, a voice procurement agent for laboratory-equipment repair and service.
+Build **ScopeDial**, a voice procurement agent for laboratory-equipment repair and service.
 
-BenchBid turns an instrument photo, service report, or existing quotation into a confirmed service specification; calls three service providers with the identical scope; obtains itemized, comparable offers; negotiates price, response time, warranty, loaner equipment, calibration documentation, and parts terms; and returns an evidence-linked recommendation.
+ScopeDial turns an instrument photo, service report, or existing quotation into a confirmed service specification; calls three service providers with the identical scope; obtains itemized, comparable offers; negotiates price, response time, warranty, loaner equipment, calibration documentation, and parts terms; and returns an evidence-linked recommendation.
 
 The central product insight is that the cheapest repair quote can be the most expensive after downtime, call-out charges, excluded calibration, and weak warranty are included.
 
@@ -42,7 +42,7 @@ It also creates a natural MIT-oriented story: scientific teams should spend time
 
 ## Challenge compliance matrix
 
-| Brief requirement | BenchBid implementation | Demo evidence |
+| Brief requirement | ScopeDial implementation | Demo evidence |
 |---|---|---|
 | Voice intake using ElevenLabs | Intake agent interviews the lab manager | Live intake conversation |
 | At least one document type | Instrument photo plus service PDF/quote | Uploaded synthetic document |
@@ -274,21 +274,13 @@ Use only after the connected loop works to diagnose latency and expensive re-ren
 
 ## Name and domain screening
 
-Recommended working name: **BenchBid**.
+Final product name: **ScopeDial**.
 
-Preliminary search found no obvious exact-match AI product named BenchBid. DNS checks on 19 July 2026 found:
-
-- `benchbid.com`: DNS records exist; assume unavailable.
-- `benchbid.ai`: no A record.
-- `benchbid.app`: no A record.
-- `benchbid.dev`: no A record.
-- `benchbid.io`: no A record.
-
-No A record does not prove a domain is available; it may be registered without a website. Confirm through an accredited registrar before purchase. A web search is not a trademark clearance.
+A preliminary exact-name web collision check found no obvious competing procurement product called ScopeDial. This is not trademark or domain clearance. Confirm both through an accredited registrar and trademark professional before commercial launch.
 
 Suggested submission tagline:
 
-> BenchBid calls laboratory service providers, makes every quote comparable, and negotiates the cost of downtime—not just the sticker price.
+> ScopeDial calls laboratory service providers, makes every quote comparable, and negotiates the cost of downtime—not just the sticker price.
 
 ## Competition map
 
@@ -311,7 +303,7 @@ Suggested submission tagline:
 - Suppliers.ai: structured sourcing and comparable supplier offers.
 - RSVP'd: wedding-vendor negotiation.
 
-BenchBid must therefore win through vertical depth, evidence, real concessions, evaluation, and a connected workflow—not by claiming that voice calls themselves are novel.
+ScopeDial must therefore win through vertical depth, evidence, real concessions, evaluation, and a connected workflow—not by claiming that voice calls themselves are novel.
 
 ## What past ElevenLabs winners teach
 
@@ -326,7 +318,7 @@ Recurring patterns:
 - the concept can be explained in one sentence;
 - the best projects have a memorable demo moment.
 
-BenchBid's memorable moment is the live reveal that the cheapest headline quote becomes the worst offer after downtime and exclusions, followed by a valid concession that changes the recommendation.
+ScopeDial's memorable moment is the live reveal that the cheapest headline quote becomes the worst offer after downtime and exclusions, followed by a valid concession that changes the recommendation.
 
 ## MIT-style judging interpretation
 
@@ -408,7 +400,7 @@ Show the evidence timeline, honesty block, and repeat-test pass rate.
 
 ### Close
 
-> BenchBid turns every service call into comparable evidence and every concession into an auditable decision.
+> ScopeDial turns every service call into comparable evidence and every concession into an auditable decision.
 
 ## Research limitations
 

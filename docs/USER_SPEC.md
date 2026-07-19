@@ -1,4 +1,4 @@
-# BenchBid User and UX Specification
+# ScopeDial User and UX Specification
 
 ## Persona: Saadia, laboratory operations lead
 

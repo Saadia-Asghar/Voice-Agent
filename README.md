@@ -1,8 +1,8 @@
-# BenchBid
+# ScopeDial
 
 > Build authority: [ElevenLabs challenge source of truth](docs/ELEVENLABS_CHALLENGE_SOURCE_OF_TRUTH.md). Every implementation and demo decision must pass its seven submission gates.
 
-BenchBid is a voice procurement agent for laboratory-equipment service. It converts voice and document intake into a confirmed service scope, collects comparable provider quotes, negotiates verified concessions, and produces an evidence-linked award memo.
+ScopeDial is a voice procurement agent for laboratory-equipment service. It converts voice and document intake into a confirmed service scope, collects comparable provider quotes, negotiates verified concessions, and produces an evidence-linked award memo.
 
 ## Current state
 
@@ -35,7 +35,7 @@ The live slice uses ElevenLabs WebRTC conversation tokens. The webhook function 
 
 ## Lovable
 
-Connect Lovable to this repository and paste [the guarded BenchBid prompt](docs/LOVABLE_PROMPT.md). Review its Git changes before merging. It must not replace the domain contracts or fabricate live states.
+Connect Lovable to this repository and paste [the guarded ScopeDial prompt](docs/LOVABLE_PROMPT.md). Review its Git changes before merging. It must not replace the domain contracts or fabricate live states.
 
 ## Documentation
 
@@ -52,4 +52,4 @@ Connect Lovable to this repository and paste [the guarded BenchBid prompt](docs/
 
 ## Safety
 
-The golden demo uses consenting simulated counterparties. BenchBid cannot purchase, accept, or bind a service contract. Do not commit API keys or Hack-Nation redemption links.
+The golden demo uses consenting simulated counterparties. ScopeDial cannot purchase, accept, or bind a service contract. Do not commit API keys or Hack-Nation redemption links.

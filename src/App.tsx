@@ -1,7 +1,9 @@
 import { lazy, Suspense, useMemo, useState } from "react";
 import { Activity, Aperture, Check, ChevronRight, CircleAlert, FileText, LockKeyhole, Mic, Phone, ShieldCheck, Sparkles } from "lucide-react";
 import { concessions, quotes } from "./fixtures";
-import { currency, knownCashTotal, rankQuotes } from "./domain";
+import { currency, isSuspiciouslyLowQuote, knownCashTotal, rankQuotes } from "./domain";
+import { Home } from "./Home";
+import { labEquipmentRepair } from "./verticalConfig";
 import "./styles.css";
 
 const ScopeStudio = lazy(() => import("./ScopeStudio").then((module) => ({ default: module.ScopeStudio })));
@@ -10,9 +12,10 @@ const AwardMemo = lazy(() => import("./AwardMemo").then((module) => ({ default: 
 
 const steps = ["Scope", "Call room", "Deal room", "Award memo"] as const;
 type Step = (typeof steps)[number];
+type Screen = "Home" | Step;
 
 export default function App() {
-  const [active, setActive] = useState<Step>("Deal room");
+  const [active, setActive] = useState<Screen>("Home");
   const [downtime, setDowntime] = useState(100);
   const [drawer, setDrawer] = useState<"evidence" | "memo" | "calls" | null>(null);
   const ranked = useMemo(
@@ -21,33 +24,33 @@ export default function App() {
   );
   const winner = ranked.find((item) => item.effective !== null);
 
-  const openStep = (step: Step) => {
+  const openStep = (step: Screen) => {
     setActive(step);
     setDrawer(null);
   };
 
   return (
     <div className="app-shell">
-      <header className="topbar">
-        <a className="brand" href="#top" aria-label="BenchBid home"><span className="brand-mark"><Aperture /></span><span>BenchBid</span></a>
-        <div className="case-title"><span className="eyebrow">Live service event</span><strong>SpinPro X2 / Error E17</strong></div>
-        <div className="status-pill"><span className="status-dot" /> Evidence-ready demo</div>
+      <header className={active === "Home" ? "topbar home-topbar" : "topbar"}>
+        <button className="brand brand-button" onClick={() => openStep("Home")} aria-label="ScopeDial home"><span className="brand-mark"><Aperture /></span><span>ScopeDial</span></button>
+        {active === "Home" ? <nav className="home-nav" aria-label="Home navigation"><a href="#how-it-works">How it works</a><a href="#challenge-proof">Challenge proof</a></nav> : <div className="case-title"><span className="eyebrow">Guided service event</span><strong>SpinPro X2 / Error E17</strong></div>}
+        {active === "Home" ? <button className="home-nav-cta" onClick={() => openStep("Scope")}>Start guided demo <ChevronRight size={16} /></button> : <div className="status-pill"><span className="status-dot" /> Evidence-ready demo</div>}
       </header>
 
-      <nav className="stepper" aria-label="Procurement workflow">
+      {active !== "Home" && <nav className="stepper" aria-label="Procurement workflow">
         {steps.map((step, index) => (
           <button key={step} className={active === step ? "step active" : "step"} aria-current={active === step ? "step" : undefined} onClick={() => openStep(step)}>
             <span>{index + 1}</span>{step}
           </button>
         ))}
-      </nav>
+      </nav>}
 
-      {active === "Scope" ? <Suspense fallback={<main className="workflow-loading">Loading Scope Studio…</main>}><ScopeStudio onOpenCalls={() => setActive("Call room")} /></Suspense> : active === "Call room" ? <Suspense fallback={<main className="workflow-loading">Loading Call Room…</main>}><CallRoom /></Suspense> : active === "Award memo" ? <Suspense fallback={<main className="workflow-loading">Loading Award Memo…</main>}><AwardMemo downtime={downtime} /></Suspense> : <main id="top">
+      {active === "Home" ? <Home onOpen={(step) => openStep(step)} /> : active === "Scope" ? <Suspense fallback={<main className="workflow-loading">Loading Scope Studio…</main>}><ScopeStudio onOpenCalls={() => setActive("Call room")} /></Suspense> : active === "Call room" ? <Suspense fallback={<main className="workflow-loading">Loading Call Room…</main>}><CallRoom /></Suspense> : active === "Award memo" ? <Suspense fallback={<main className="workflow-loading">Loading Award Memo…</main>}><AwardMemo downtime={downtime} /></Suspense> : <main id="top">
         <section className="hero-card">
           <div>
             <span className="kicker"><Sparkles size={14} /> Decision-ready comparison</span>
             <h1>The lowest quote is not<br />the lowest-cost repair.</h1>
-            <p>Three providers heard the same locked scope. BenchBid found the exclusions, priced the downtime, and negotiated the terms that actually determine when the lab gets back online.</p>
+            <p>Three providers heard the same locked scope. ScopeDial found the exclusions, priced the downtime, and negotiated the terms that actually determine when the lab gets back online.</p>
           </div>
           <div className="scope-proof">
             <div className="scope-icon"><LockKeyhole /></div>
@@ -80,7 +83,7 @@ export default function App() {
                     <td>{currency(knownCashTotal(quote))}</td>
                     <td>{quote.responseHours === null ? "Unknown" : `${quote.responseHours}h`}</td>
                     <td>{quote.warrantyDays === null ? "Unknown" : `${quote.warrantyDays} days`}</td>
-                    <td><strong>{currency(effective)}</strong>{quote.unknowns.length > 0 && <small className="warning"><CircleAlert size={12} /> {quote.unknowns.length} unresolved</small>}</td>
+                    <td><strong>{currency(effective)}</strong>{isSuspiciouslyLowQuote(quote, quotes, labEquipmentRepair.suspiciousLowQuoteThreshold) && <small className="warning"><CircleAlert size={12} /> 30% below peer median — verify</small>}{quote.unknowns.length > 0 && <small className="warning"><CircleAlert size={12} /> {quote.unknowns.length} unresolved</small>}</td>
                     <td><span className={`outcome ${quote.status}`}>{quote.status}</span></td>
                   </tr>
                 ))}
@@ -110,7 +113,7 @@ export default function App() {
               <li><Check /> {winner?.quote.warrantyDays == null ? "Warranty unresolved" : `${winner.quote.warrantyDays}-day warranty`}</li>
             </ul>
             <button className="primary-button" onClick={() => setDrawer("memo")}>Review award memo <ChevronRight size={17} /></button>
-            <small className="human-note"><ShieldCheck size={13} /> Human approval required. BenchBid cannot purchase or bind a contract.</small>
+            <small className="human-note"><ShieldCheck size={13} /> Human approval required. ScopeDial cannot purchase or bind a contract.</small>
           </aside>
         </div>
 
@@ -125,7 +128,7 @@ export default function App() {
           <section className="detail-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" onClick={(event) => event.stopPropagation()}>
             <button className="drawer-close" onClick={() => setDrawer(null)} aria-label="Close details">Close</button>
             {drawer === "evidence" && <><span className="kicker">Transcript receipts</span><h2 id="drawer-title">Every material term links to the call.</h2>{quotes.flatMap((quote) => quote.evidence.map((item) => <blockquote key={item.id}><strong>{quote.provider} / {item.at}</strong><p>“{item.quote}”</p></blockquote>))}</>}
-            {drawer === "memo" && <><span className="kicker">Human-reviewed award memo</span><h2 id="drawer-title">Recommend {winner?.quote.provider}</h2><p>The recommendation uses a ${downtime}/hour downtime scenario. Known effective cost is {currency(winner?.effective ?? null)}. The user must review assumptions and authorize any next step.</p><div className="memo-callout"><ShieldCheck /> BenchBid cannot accept, purchase, or bind a service contract.</div></>}
+            {drawer === "memo" && <><span className="kicker">Human-reviewed award memo</span><h2 id="drawer-title">Recommend {winner?.quote.provider}</h2><p>The recommendation uses a ${downtime}/hour downtime scenario. Known effective cost is {currency(winner?.effective ?? null)}. The user must review assumptions and authorize any next step.</p><div className="memo-callout"><ShieldCheck /> ScopeDial cannot accept, purchase, or bind a service contract.</div></>}
             {drawer === "calls" && <><span className="kicker">Golden-call library</span><h2 id="drawer-title">Three distinct conversation outcomes</h2>{quotes.map((quote) => <div className="call-replay" key={quote.provider}><span className={`outcome ${quote.status}`}>{quote.status}</span><div><strong>{quote.provider}</strong><p>{quote.evidence[0]?.quote ?? "No completed transcript evidence."}</p></div><button disabled aria-label={`Audio for ${quote.provider} is not connected yet`}>Audio adapter pending</button></div>)}</>}
           </section>
         </div>

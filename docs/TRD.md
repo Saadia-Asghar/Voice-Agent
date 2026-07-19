@@ -1,4 +1,4 @@
-# BenchBid Technical Requirements Document
+# ScopeDial Technical Requirements Document
 
 ## Architecture
 

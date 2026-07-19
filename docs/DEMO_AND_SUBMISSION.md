@@ -1,10 +1,10 @@
-# BenchBid Demo and Submission Package
+# ScopeDial Demo and Submission Package
 
 Official judging frame: **creativity, technical depth, presentation**. The video should make one memorable creative claim, visibly prove the signed evidence chain, and maintain a single clear story.
 
 ## One-line pitch
 
-BenchBid is the evidence-backed AI voice buyer that turns one confirmed laboratory repair scope into comparable provider calls, truthful negotiation, and a human-reviewable award memo.
+ScopeDial is the evidence-backed AI voice buyer that turns one confirmed laboratory repair scope into comparable provider calls, truthful negotiation, and a human-reviewable award memo.
 
 ## Why it is not a wrapper
 
@@ -34,7 +34,7 @@ Move the downtime slider. Explain why the lowest headline price loses after miss
 
 ### 3:10–3:30 — Close
 
-Open Award Memo. “BenchBid does not buy. It gives the human a defensible, evidence-linked decision.” End on the ranked outcomes and human approval boundary.
+Open Award Memo. “ScopeDial does not buy. It gives the human a defensible, evidence-linked decision.” End on the ranked outcomes and human approval boundary.
 
 ## Recording checklist
 
@@ -53,7 +53,7 @@ Laboratories lose money twice when equipment fails: first through downtime, then
 
 ### Solution
 
-BenchBid creates one voice-and-document ScopePrint, calls three providers with that identical specification, itemizes every commercial and operational term, negotiates only with verified leverage, and produces an evidence-linked award memo.
+ScopeDial creates one voice-and-document ScopePrint, calls three providers with that identical specification, itemizes every commercial and operational term, negotiates only with verified leverage, and produces an evidence-linked award memo.
 
 ### Technical implementation
 

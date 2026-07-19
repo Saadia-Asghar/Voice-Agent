@@ -1,8 +1,8 @@
-# BenchBid Product Requirements Document
+# ScopeDial Product Requirements Document
 
 ## Product statement
 
-BenchBid is an AI voice procurement agent for laboratory-equipment service. It creates a confirmed repair scope from voice and documents, contacts providers with the identical scope, extracts comparable offers, negotiates material terms with verified leverage, and recommends a deal with audio and transcript receipts.
+ScopeDial is an AI voice procurement agent for laboratory-equipment service. It creates a confirmed repair scope from voice and documents, contacts providers with the identical scope, extracts comparable offers, negotiates material terms with verified leverage, and recommends a deal with audio and transcript receipts.
 
 ## Target user
 
@@ -25,14 +25,14 @@ Service providers quote different scopes. A low headline price may exclude trave
 ## MVP journey
 
 1. User starts a voice interview or uploads a synthetic service report/quote.
-2. BenchBid creates one structured scope with evidence and uncertainty.
+2. ScopeDial creates one structured scope with evidence and uncertainty.
 3. User corrects and confirms the scope.
-4. BenchBid conducts three distinct consenting voice conversations.
+4. ScopeDial conducts three distinct consenting voice conversations.
 5. Quote fields populate live; every call ends with quote, callback, or decline.
-6. BenchBid normalizes scope and computes transparent cost scenarios.
+6. ScopeDial normalizes scope and computes transparent cost scenarios.
 7. User authorizes a negotiation boundary.
 8. The closer cites only verified offers and obtains a material concession.
-9. BenchBid produces an award memo with recordings and transcript citations.
+9. ScopeDial produces an award memo with recordings and transcript citations.
 
 ## Functional requirements
 

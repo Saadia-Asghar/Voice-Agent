@@ -1,4 +1,4 @@
-# BenchBid Construction Blueprint
+# ScopeDial Construction Blueprint
 
 ## Objective
 

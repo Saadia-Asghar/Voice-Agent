@@ -1,11 +1,11 @@
-# Lovable prompt for BenchBid
+# Lovable prompt for ScopeDial
 
 Paste this as one prompt. Connect Lovable to the existing GitHub repository and instruct it to modify the current React/Vite application rather than generating a new project.
 
 ```text
-You are extending an existing React + Vite + TypeScript application called BenchBid. Do not replace its architecture, package manager, domain model, colors, or typography. Inspect the repository first. Preserve src/domain.ts, src/contracts.ts, the Supabase directory, the existing dark laboratory-procurement design, and all working tests.
+You are extending an existing React + Vite + TypeScript application called ScopeDial. Do not replace its architecture, package manager, domain model, colors, or typography. Inspect the repository first. Preserve src/domain.ts, src/contracts.ts, the Supabase directory, the existing dark laboratory-procurement design, and all working tests.
 
-Product: BenchBid is an evidence-backed voice procurement negotiator for laboratory equipment repair. It is not a generic chatbot. Users create one confirmed ScopePrint, run three consenting live ElevenLabs provider conversations, normalize itemized quotes, negotiate using only verified leverage, and review an evidence-linked award memo.
+Product: ScopeDial is an evidence-backed voice procurement negotiator for laboratory equipment repair. It is not a generic chatbot. Users create one confirmed ScopePrint, run three consenting live ElevenLabs provider conversations, normalize itemized quotes, negotiate using only verified leverage, and review an evidence-linked award memo.
 
 Create production-quality responsive screens for:
 1. Scope Studio: voice-interview card, document upload card, extracted-field comparison, visible conflicts, unknown fields, confirmation checkbox, version number, and canonical ScopePrint hash. Calls must remain disabled until scope status is confirmed.

@@ -65,6 +65,23 @@ export const rankQuotes = (quotes: ServiceQuote[], scenario: CostScenario) =>
       return a.effective - b.effective;
     });
 
+export const isSuspiciouslyLowQuote = (
+  candidate: ServiceQuote,
+  peers: ServiceQuote[],
+  threshold = 0.3,
+) => {
+  const candidateTotal = knownCashTotal(candidate);
+  const peerTotals = peers
+    .filter((peer) => peer.provider !== candidate.provider)
+    .map(knownCashTotal)
+    .filter((total): total is number => total !== null)
+    .sort((a, b) => a - b);
+  if (candidateTotal === null || peerTotals.length < 2 || threshold <= 0 || threshold >= 1) return false;
+  const middle = Math.floor(peerTotals.length / 2);
+  const median = peerTotals.length % 2 ? peerTotals[middle] : (peerTotals[middle - 1] + peerTotals[middle]) / 2;
+  return candidateTotal <= median * (1 - threshold);
+};
+
 export const currency = (value: number | null) =>
   value === null
     ? "Unknown"

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { effectiveCost, knownCashTotal, rankQuotes, type ServiceQuote } from "./domain";
+import { effectiveCost, isSuspiciouslyLowQuote, knownCashTotal, rankQuotes, type ServiceQuote } from "./domain";
+import { labEquipmentRepair } from "./verticalConfig";
 
 const quote: ServiceQuote = {
   provider: "Test",
@@ -52,5 +53,26 @@ describe("quote economics", () => {
       { downtimeCostPerHour: 100, requiredExcludedServices: {} },
     );
     expect(ranked.map((item) => item.quote.provider)).toEqual(["Incomplete A", "Incomplete B"]);
+  });
+
+  it("warns when a comparable quote is at least 30% below the peer median", () => {
+    const candidate = { ...quote, provider: "Low", packageTotal: 1100, callout: { amount: 0, inclusion: "included" as const }, calibration: { amount: 0, inclusion: "included" as const }, parts: { amount: 0, inclusion: "included" as const } };
+    const peers = [{ ...quote, provider: "Peer A", packageTotal: 2000 }, { ...quote, provider: "Peer B", packageTotal: 2200 }];
+    expect(isSuspiciouslyLowQuote(candidate, [candidate, ...peers], labEquipmentRepair.suspiciousLowQuoteThreshold)).toBe(true);
+  });
+
+  it("does not call an incomplete quote suspiciously cheap", () => {
+    const incomplete = { ...quote, provider: "Unknown", packageTotal: null };
+    expect(isSuspiciouslyLowQuote(incomplete, [incomplete, quote, { ...quote, provider: "Peer" }])).toBe(false);
+  });
+});
+
+describe("vertical configuration", () => {
+  it("keeps the challenge-specific vertical rules in data rather than screen logic", () => {
+    expect(labEquipmentRepair.supportedDocumentTypes.length).toBeGreaterThan(0);
+    expect(labEquipmentRepair.requiredScopeFields).toContain("calibration requirement");
+    expect(labEquipmentRepair.comparableQuoteFields).toContain("exclusions");
+    expect(labEquipmentRepair.negotiationLevers).toContain("warranty");
+    expect(labEquipmentRepair.suspiciousLowQuoteThreshold).toBe(0.3);
   });
 });

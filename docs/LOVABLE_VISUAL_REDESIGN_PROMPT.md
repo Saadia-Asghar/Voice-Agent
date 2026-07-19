@@ -1,15 +1,15 @@
-# Lovable prompt: BenchBid visual redesign
+# Lovable prompt: ScopeDial visual redesign
 
 Paste this into Lovable after connecting the `Saadia-Asghar/Voice-Agent` repository.
 
 ```text
-Redesign the existing BenchBid React + TypeScript application across all four functional screens: Scope Studio, Call Room, Deal Room, and Award Memo. Do not rebuild the app, remove functionality, change domain calculations, fabricate live call state, or replace working ElevenLabs/Supabase integrations.
+Redesign the existing ScopeDial React + TypeScript application across all four functional screens: Scope Studio, Call Room, Deal Room, and Award Memo. Do not rebuild the app, remove functionality, change domain calculations, fabricate live call state, or replace working ElevenLabs/Supabase integrations.
 
 VISUAL DIRECTION
 Use a premium AI voice SaaS aesthetic inspired by this reference only at the level of visual language:
 https://dribbble.com/shots/27143388-AI-Voice-Agents-SaaS-Modern-Call-Automation-Landing-Page
 
-Do not copy V-3 branding, wording, navigation, logos, or marketing sections. Translate these characteristics into BenchBid’s product UI:
+Do not copy V-3 branding, wording, navigation, logos, or marketing sections. Translate these characteristics into ScopeDial’s product UI:
 - true-white canvas and surfaces
 - near-black charcoal typography
 - soft blue, periwinkle, and pale pink pixel-mosaic gradients used only around live voice, selected recommendation, and evidence moments
@@ -23,7 +23,7 @@ DESIGN TOKENS
 Background #FFFFFF; secondary canvas #F7F8FC; text #17181D; muted #6D7180; border #E7E8EF; accent #4F6EF7; soft blue #DDE8FF; periwinkle #B8BBDD; pink #F1DDF4; success #159A5B; warning #D58A17; danger #D94941. Use Manrope or Inter. Shadows must be soft and low-opacity.
 
 APP SHELL
-Keep BenchBid branding, case “SpinPro X2 / Error E17”, and the four steps Scope, Call room, Deal room, Award memo. Use a quiet white header with a black radial/aperture brand mark. Active step uses a filled blue or black numbered circle. Keep the layout responsive and keyboard accessible.
+Keep ScopeDial branding, case “SpinPro X2 / Error E17”, and the four steps Scope, Call room, Deal room, Award memo. Use a quiet white header with a black radial/aperture brand mark. Active step uses a filled blue or black numbered circle. Keep the layout responsive and keyboard accessible.
 
 SCREEN 1 — SCOPE STUDIO
 Headline: “Build one scope every provider must quote.” Keep the real voice interview, document upload, shared service-scope editor, conflict resolution, confirmation checklist, ScopePrint hash, and lock/open-call actions. Give the voice area a soft pixel-mosaic waveform field. Never fake a connected voice state.

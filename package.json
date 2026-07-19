@@ -1,12 +1,12 @@
 {
-  "name": "benchbid",
+  "name": "scopedial",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "test": "vitest run",
+    "test": "vitest run && node scripts/check-agent-prompts.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
