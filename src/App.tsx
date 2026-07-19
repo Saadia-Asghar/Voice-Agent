@@ -6,6 +6,7 @@ import "./styles.css";
 
 const ScopeStudio = lazy(() => import("./ScopeStudio").then((module) => ({ default: module.ScopeStudio })));
 const CallRoom = lazy(() => import("./CallRoom").then((module) => ({ default: module.CallRoom })));
+const AwardMemo = lazy(() => import("./AwardMemo").then((module) => ({ default: module.AwardMemo })));
 
 const steps = ["Scope", "Call room", "Deal room", "Award memo"] as const;
 type Step = (typeof steps)[number];
@@ -22,7 +23,7 @@ export default function App() {
 
   const openStep = (step: Step) => {
     setActive(step);
-    setDrawer(step === "Award memo" ? "memo" : null);
+    setDrawer(null);
   };
 
   return (
@@ -41,7 +42,7 @@ export default function App() {
         ))}
       </nav>
 
-      {active === "Scope" ? <Suspense fallback={<main className="workflow-loading">Loading Scope Studio…</main>}><ScopeStudio onOpenCalls={() => setActive("Call room")} /></Suspense> : active === "Call room" ? <Suspense fallback={<main className="workflow-loading">Loading Call Room…</main>}><CallRoom /></Suspense> : <main id="top">
+      {active === "Scope" ? <Suspense fallback={<main className="workflow-loading">Loading Scope Studio…</main>}><ScopeStudio onOpenCalls={() => setActive("Call room")} /></Suspense> : active === "Call room" ? <Suspense fallback={<main className="workflow-loading">Loading Call Room…</main>}><CallRoom /></Suspense> : active === "Award memo" ? <Suspense fallback={<main className="workflow-loading">Loading Award Memo…</main>}><AwardMemo downtime={downtime} /></Suspense> : <main id="top">
         <section className="hero-card">
           <div>
             <span className="kicker"><Sparkles size={14} /> Decision-ready comparison</span>
