@@ -9,3 +9,7 @@ coverage/
 .DS_Store
 .vercel
 supabase/.temp/
+submission-videos/package/
+submission-videos/*.tgz
+submission-videos/_live/
+
