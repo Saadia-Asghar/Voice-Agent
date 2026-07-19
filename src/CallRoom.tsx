@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useConversationControls, useConversationStatus } from "@elevenlabs/react";
 import { Bot, Check, Phone, PhoneOff, RotateCcw, ShieldCheck } from "lucide-react";
+import { useAuth } from "./Auth";
 
 const providers = [
   { name: "OEM Precision", style: "Tough OEM", outcome: "ITEMIZED QUOTE", tone: "good", fields: [["Package total", "$3,100"],["Callout", "$350"],["Parts", "$500"],["Calibration", "Included"],["Response", "18h"],["Warranty", "180 days"]], transcript: ["You: I’m ScopeDial, an AI calling for City Labs.", "Lisa: Are you a robot?", "You: Yes. I’m an AI agent representing the customer.", "Lisa: Calibration is included with a six-month warranty."] },
@@ -20,6 +21,7 @@ export function CallRoom() {
   const [pendingLanes, setPendingLanes] = useState<number[]>([]);
   const [sessions, setSessions] = useState<Record<number, EvidenceSession>>({});
   const [liveError, setLiveError] = useState<string | null>(null);
+  const { session: authSession } = useAuth();
   const provider = providers[selected];
 
   const apiConfig = () => ({
@@ -31,10 +33,11 @@ export function CallRoom() {
   const startLiveCall = async (index: number) => {
     setLiveError(null);
     const { supabaseUrl, anonKey, buyerAgentId } = apiConfig();
+    if (!authSession) return setLiveError("Sign in from the header before starting a billable live call. Fixture lanes remain available.");
     if (!supabaseUrl || !anonKey || !buyerAgentId) return setLiveError("Live Buyer/Closer configuration is unavailable.");
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
-      const response = await fetch(`${supabaseUrl}/functions/v1/elevenlabs-token?agent_id=${encodeURIComponent(buyerAgentId)}&provider=${encodeURIComponent(providers[index].name)}`, { headers: { Authorization: `Bearer ${anonKey}`, apikey: anonKey } });
+      const response = await fetch(`${supabaseUrl}/functions/v1/elevenlabs-token?agent_id=${encodeURIComponent(buyerAgentId)}&provider=${encodeURIComponent(providers[index].name)}`, { headers: { Authorization: `Bearer ${authSession.access_token}`, apikey: anonKey } });
       if (!response.ok) throw new Error("Could not authorize the live Buyer/Closer session.");
       const { token, callId, sessionProof } = await response.json() as { token: string; callId: string; sessionProof: string };
       setSessions((current) => ({ ...current, [index]: { callId, proof: sessionProof } }));
@@ -45,7 +48,7 @@ export function CallRoom() {
         onConnect: ({ conversationId }) => {
           void fetch(`${supabaseUrl}/functions/v1/elevenlabs-token`, {
             method: "POST",
-            headers: { Authorization: `Bearer ${anonKey}`, apikey: anonKey, "Content-Type": "application/json" },
+            headers: { Authorization: `Bearer ${authSession.access_token}`, apikey: anonKey, "Content-Type": "application/json" },
             body: JSON.stringify({ action: "attach", callId, proof: sessionProof, conversationId }),
           });
         },
@@ -66,12 +69,12 @@ export function CallRoom() {
   const verifyEvidence = async (index: number) => {
     const session = sessions[index];
     const { supabaseUrl, anonKey } = apiConfig();
-    if (!session || !supabaseUrl || !anonKey) return;
+    if (!session || !supabaseUrl || !anonKey || !authSession) return;
     setLiveError(null);
     try {
       const response = await fetch(`${supabaseUrl}/functions/v1/elevenlabs-token`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${anonKey}`, apikey: anonKey, "Content-Type": "application/json" },
+        headers: { Authorization: `Bearer ${authSession.access_token}`, apikey: anonKey, "Content-Type": "application/json" },
         body: JSON.stringify({ action: "status", callId: session.callId, proof: session.proof }),
       });
       const status = await response.json() as { verified?: boolean };

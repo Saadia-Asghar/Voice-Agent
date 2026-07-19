@@ -47,6 +47,8 @@ The initial vertical is laboratory-equipment repair because downtime is measurab
 4. **Deal Room** normalizes quotes, preserves unknowns, adds downtime, warns about suspiciously cheap offers, and ties concessions to transcript evidence.
 5. **Award Memo** recommends an option in plain language, shows evidence receipts, and requires human approval.
 
+Authentication is intentionally non-blocking: every judge can explore the simulated workflow without an account. Supabase email/password authentication is required only before a billable ElevenLabs session, and logout is always available in the header. This protects API credits without adding a login wall to the judged demo.
+
 ## Agent readiness and prompt budget
 
 `npm test` runs deterministic prompt policy checks with a conservative four-characters-per-token estimate and a 2,000-token review ceiling:

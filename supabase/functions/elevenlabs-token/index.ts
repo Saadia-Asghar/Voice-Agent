@@ -16,10 +16,17 @@ async function proofHash(proof: string) {
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   const url = Deno.env.get("SUPABASE_URL");
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!url || !serviceKey) return Response.json({ error: "Persistence unavailable." }, { status: 500, headers: corsHeaders });
+  if (!url || !anonKey || !serviceKey) return Response.json({ error: "Persistence unavailable." }, { status: 500, headers: corsHeaders });
   const { createClient } = await import("npm:@supabase/supabase-js@2");
   const db = createClient(url, serviceKey, { auth: { persistSession: false } });
+  const authorization = request.headers.get("Authorization");
+  const accessToken = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
+  if (!accessToken) return Response.json({ error: "Authentication required." }, { status: 401, headers: corsHeaders });
+  const auth = createClient(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { data: { user }, error: authError } = await auth.auth.getUser(accessToken);
+  if (authError || !user) return Response.json({ error: "Invalid or expired session." }, { status: 401, headers: corsHeaders });
 
   if (request.method === "POST") {
     const input = await request.json().catch(() => null) as { action?: string; callId?: string; proof?: string; conversationId?: string } | null;

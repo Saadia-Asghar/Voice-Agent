@@ -4,6 +4,7 @@ import { concessions, quotes } from "./fixtures";
 import { currency, isSuspiciouslyLowQuote, knownCashTotal, rankQuotes } from "./domain";
 import { Home } from "./Home";
 import { labEquipmentRepair } from "./verticalConfig";
+import { AuthControl, LoginDialog } from "./Auth";
 import "./styles.css";
 
 const ScopeStudio = lazy(() => import("./ScopeStudio").then((module) => ({ default: module.ScopeStudio })));
@@ -18,6 +19,7 @@ export default function App() {
   const [active, setActive] = useState<Screen>("Home");
   const [downtime, setDowntime] = useState(100);
   const [drawer, setDrawer] = useState<"evidence" | "memo" | "calls" | null>(null);
+  const [loginOpen, setLoginOpen] = useState(false);
   const ranked = useMemo(
     () => rankQuotes(quotes, { downtimeCostPerHour: downtime, requiredExcludedServices: { loaner: 700, warranty: 300, "callout fee": 400 } }),
     [downtime],
@@ -34,8 +36,10 @@ export default function App() {
       <header className={active === "Home" ? "topbar home-topbar" : "topbar"}>
         <button className="brand brand-button" onClick={() => openStep("Home")} aria-label="ScopeDial home"><span className="brand-mark"><Aperture /></span><span>ScopeDial</span></button>
         {active === "Home" ? <nav className="home-nav" aria-label="Home navigation"><a href="#how-it-works">How it works</a><a href="#challenge-proof">Challenge proof</a></nav> : <div className="case-title"><span className="eyebrow">Guided service event</span><strong>SpinPro X2 / Error E17</strong></div>}
-        {active === "Home" ? <button className="home-nav-cta" onClick={() => openStep("Scope")}>Start guided demo <ChevronRight size={16} /></button> : <div className="status-pill"><span className="status-dot" /> Evidence-ready demo</div>}
+        <div className="topbar-actions">{active === "Home" ? <button className="home-nav-cta" onClick={() => openStep("Scope")}>Start guided demo <ChevronRight size={16} /></button> : <div className="status-pill"><span className="status-dot" /> Evidence-ready demo</div>}<AuthControl onOpen={() => setLoginOpen(true)} /></div>
       </header>
+
+      <LoginDialog open={loginOpen} onClose={() => setLoginOpen(false)} />
 
       {active !== "Home" && <nav className="stepper" aria-label="Procurement workflow">
         {steps.map((step, index) => (
