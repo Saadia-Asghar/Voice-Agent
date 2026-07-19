@@ -53,7 +53,7 @@ export default function App() {
     <div className="app-shell">
       <header className={active === "Home" ? "topbar home-topbar" : "topbar"}>
         <button className="brand brand-button" onClick={() => openStep("Home")} aria-label="BenchDial home"><span className="brand-mark"><AudioWaveform /></span><span>BenchDial</span></button>
-        {active === "Home" ? <nav className="home-nav" aria-label="Home navigation"><a href="#how-it-works">How it works</a><a href="#challenge-proof">Challenge proof</a></nav> : <div className="case-title"><span className="eyebrow">Negotiator vertical · {labEquipmentRepair.label}</span><strong>SpinPro X2 / Error E17</strong></div>}
+        {active === "Home" ? <nav className="home-nav" aria-label="Home navigation"><a href="#how-it-works">How it works</a><a href="#what-benchdial-does">What it does</a></nav> : <div className="case-title"><span className="eyebrow">Negotiator vertical · {labEquipmentRepair.label}</span><strong>SpinPro X2 / Error E17</strong></div>}
         <div className="topbar-actions">{active === "Home" ? <button className="home-nav-cta" onClick={() => openStep("Scope")}>Start Estimator <ChevronRight size={16} /></button> : <div className="status-pill"><span className="status-dot" /> {confirmedScope ? "ScopePrint locked" : "Evidence-ready demo"}</div>}<AuthControl onOpen={() => setLoginOpen(true)} /></div>
       </header>
 
