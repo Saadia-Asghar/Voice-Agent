@@ -8,7 +8,7 @@ export function AwardMemo({ downtime }: { downtime: number }) {
 
   return <main className="workflow-screen memo-screen">
     <section className="memo-hero">
-      <div><span className="eyebrow">Decision record / ScopePrint BB-7F3A-1042</span><h1>Recommend {recommendation?.quote.provider}</h1><p>Fastest complete recovery with calibration, loaner coverage, and the strongest warranty. The recommendation remains subject to human approval.</p></div>
+      <div><span className="eyebrow">Decision record / ScopePrint BB-7F3A-1042</span><h1>A decision a human can defend.</h1><p>Recommend {recommendation?.quote.provider}: the fastest complete recovery with calibration, loaner coverage, and the strongest warranty—subject to human approval.</p></div>
       <div className="memo-actions"><span className="provenance fixture">DEMO EVIDENCE</span><button className="secondary-button" onClick={() => window.print()}><Download size={16} /> Export / print</button></div>
     </section>
 

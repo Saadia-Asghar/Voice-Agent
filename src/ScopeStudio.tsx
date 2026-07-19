@@ -15,6 +15,7 @@ export function ScopeStudio({ onOpenCalls }: { onOpenCalls: () => void }) {
   const hash = useMemo(() => confirmed ? "BB-7F3A-1042" : "Not generated", [confirmed]);
 
   return <main className="workflow-screen scope-screen">
+    <header className="workflow-heading"><h1>Build one scope every provider must quote.</h1><p>Voice and documents resolve into one confirmed specification—before any provider hears the job.</p></header>
     <div className="scope-main">
       <section className="workflow-panel"><div className="section-title"><div><span className="eyebrow">Voice interview</span><h2>Describe the failure once.</h2></div><Mic /></div><VoiceIntake /></section>
       <section className="workflow-panel"><div className="section-title"><div><span className="eyebrow">Document intake</span><h2>Add one service report or quote.</h2></div><FileUp /></div><label className="upload-zone"><input type="file" accept=".pdf,.png,.jpg,.jpeg" onChange={(event) => setDocumentName(event.target.files?.[0]?.name ?? null)} /><FileUp /><strong>{documentName ?? "Drop PDF or photo here"}</strong><small>{documentName ? "Ready for server-side extraction" : "PDF, JPG or PNG / maximum 25 MB"}</small></label></section>

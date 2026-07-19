@@ -22,6 +22,7 @@
 - Vercel production embeds the correct Supabase URL, anon key, Estimator ID, and Buyer ID.
 - Estimator conversation-token request returns HTTP 200.
 - Call Room exposes three live controls and retains explicitly labeled fixture fallbacks.
+- Each live session receives a server-created evidence record and one-time proof. The browser binds the ElevenLabs conversation ID on connection; `RECORDED LIVE RUN` appears only after the signed post-call webhook stores a non-empty transcript.
 
 ## Evidence still requiring a human voice
 

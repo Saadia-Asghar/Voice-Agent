@@ -39,6 +39,9 @@ Connect Lovable to this repository and paste [the guarded BenchBid prompt](docs/
 
 ## Documentation
 
+- `docs/OFFICIAL_ANNOUNCEMENTS_ACTION_PLAN.md`
+- `docs/PITCH_DECK.md`
+- `docs/LINKEDIN_POST.md`
 - `docs/PRD.md`
 - `docs/TRD.md`
 - `docs/USER_SPEC.md`

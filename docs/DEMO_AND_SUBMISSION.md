@@ -1,5 +1,7 @@
 # BenchBid Demo and Submission Package
 
+Official judging frame: **creativity, technical depth, presentation**. The video should make one memorable creative claim, visibly prove the signed evidence chain, and maintain a single clear story.
+
 ## One-line pitch
 
 BenchBid is the evidence-backed AI voice buyer that turns one confirmed laboratory repair scope into comparable provider calls, truthful negotiation, and a human-reviewable award memo.
@@ -37,6 +39,7 @@ Open Award Memo. “BenchBid does not buy. It gives the human a defensible, evid
 ## Recording checklist
 
 - Record three genuine consenting ElevenLabs sessions; never relabel fixtures as live.
+- After each call, use **Verify evidence** and capture the `RECORDED LIVE RUN` label. It appears only after the signed webhook persists a transcript.
 - Preserve conversation IDs, full transcripts, permitted audio, scope hashes, and terminal outcomes.
 - Capture one unscripted, leverage-caused term change.
 - Blur phone numbers, API keys, webhook secrets, and private counterparty policies.

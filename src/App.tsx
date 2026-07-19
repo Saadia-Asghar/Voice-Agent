@@ -1,5 +1,5 @@
 import { lazy, Suspense, useMemo, useState } from "react";
-import { Activity, Check, ChevronRight, CircleAlert, FileText, LockKeyhole, Mic, Phone, ShieldCheck, Sparkles } from "lucide-react";
+import { Activity, Aperture, Check, ChevronRight, CircleAlert, FileText, LockKeyhole, Mic, Phone, ShieldCheck, Sparkles } from "lucide-react";
 import { concessions, quotes } from "./fixtures";
 import { currency, knownCashTotal, rankQuotes } from "./domain";
 import "./styles.css";
@@ -29,9 +29,9 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <a className="brand" href="#top" aria-label="BenchBid home"><span className="brand-mark">B</span><span>BenchBid</span></a>
+        <a className="brand" href="#top" aria-label="BenchBid home"><span className="brand-mark"><Aperture /></span><span>BenchBid</span></a>
         <div className="case-title"><span className="eyebrow">Live service event</span><strong>SpinPro X2 / Error E17</strong></div>
-        <div className="status-pill"><span className="status-dot" /> Demo environment</div>
+        <div className="status-pill"><span className="status-dot" /> Evidence-ready demo</div>
       </header>
 
       <nav className="stepper" aria-label="Procurement workflow">
