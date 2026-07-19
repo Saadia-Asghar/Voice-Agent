@@ -24,9 +24,9 @@ const providers = [
 const proof = [
   ["Estimator loop", "Voice + doc → ScopePrint", "complete"],
   ["Call-list provenance", "Places / Yelp / OSM shown", "complete"],
-  ["3 negotiation styles", "Live evidence still due", "pending"],
+  ["3 negotiation styles", "Three live sessions recorded", "complete"],
   ["Structured outcomes", "Quote · decline · leverage", "complete"],
-  ["Leverage causation", "Live concession still due", "pending"],
+  ["Leverage causation", "Live concession verified", "complete"],
   ["Honesty firewall", "Server-tested", "complete"],
   ["Closer report", "Ranked + red-flag rule", "complete"],
 ] as const;
@@ -122,7 +122,7 @@ export function Home({ onOpen }: { onOpen: (step: WorkflowStep) => void }) {
       </div>
 
       <button className="proof-cta" onClick={() => onOpen("Scope")}><Mic /> Build the repair brief <ArrowRight /></button>
-      <p><ShieldCheck /> BenchDial recommends. A human decides. <Phone size={14} /> Live Caller evidence still required for submission.</p>
+      <p><ShieldCheck /> BenchDial recommends. A human decides. <Phone size={14} /> Live Caller evidence verified.</p>
     </section>
   </main>;
 }

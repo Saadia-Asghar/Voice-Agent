@@ -91,7 +91,7 @@ export function useAuth() {
 export function AuthControl({ onOpen }: { onOpen: () => void }) {
   const { session, loading, signOut } = useAuth();
   if (loading) return <span className="auth-state">Checking live access…</span>;
-  if (!session) return <button className="auth-button" onClick={onOpen}><LogIn size={15} /> Unlock live calls</button>;
+  if (!session) return <button className="auth-button" onClick={onOpen}><LogIn size={15} /> Open live workspace</button>;
   return <div className="auth-user"><span><ShieldCheck size={14} /> {session.user.email?.split("@")[0] ?? "Buyer"}</span><button onClick={() => void signOut()} aria-label="Log out"><LogOut size={15} /></button></div>;
 }
 
@@ -172,21 +172,21 @@ export function LoginDialog({ open, onClose }: { open: boolean; onClose: () => v
     }
   };
 
-  const title = mode === "sign-in" ? "Unlock live negotiations." : mode === "sign-up" ? "Create your buyer seat." : "Restore live-call access.";
-  const submitLabel = mode === "sign-in" ? "Unlock live calls" : mode === "sign-up" ? "Create buyer seat" : "Send recovery link";
+  const title = mode === "sign-in" ? "Enter your live negotiation workspace." : mode === "sign-up" ? "Create your BenchDial workspace." : "Recover your workspace access.";
+  const submitLabel = mode === "sign-in" ? "Open workspace" : mode === "sign-up" ? "Create workspace" : "Send recovery link";
 
   return <div className="auth-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
     <section ref={dialogRef} className="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title" aria-describedby="auth-description" onKeyDown={handleKeyDown}>
       <button className="auth-close" onClick={onClose} aria-label="Close authentication"><X /></button>
-      <span className="eyebrow">BenchDial live access</span>
+      <span className="eyebrow">Live negotiation workspace</span>
       <h2 id="auth-title">{title}</h2>
-      <p id="auth-description">Walk the simulated Call Room freely. Sign in only when you are ready for billable voice intake and recorded provider negotiations.</p>
+      <p id="auth-description">Save your repair brief, launch voice conversations, and keep the evidence trail attached to your workspace.</p>
       <div className="auth-tabs" role="tablist" aria-label="Buyer access">
         <button type="button" role="tab" aria-selected={mode === "sign-in"} onClick={() => changeMode("sign-in")}>Unlock</button>
         <button type="button" role="tab" aria-selected={mode === "sign-up"} onClick={() => changeMode("sign-up")}>New buyer seat</button>
       </div>
       <form onSubmit={(event) => void submit(event)}>
-        <label>Buyer work email<input ref={emailRef} type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="saadia@citylabs.example" autoComplete="email" required /></label>
+        <label>Workspace email<input ref={emailRef} type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@lab.org" autoComplete="email" required /></label>
         {mode !== "reset" && <label>Access password<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === "sign-in" ? "current-password" : "new-password"} minLength={8} required /></label>}
         {error && <p className="warning" role="alert" aria-live="assertive">{error}</p>}
         {message && <p className="auth-message" role="status" aria-live="polite">{message}</p>}

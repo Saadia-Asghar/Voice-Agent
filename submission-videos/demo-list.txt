@@ -1,0 +1,12 @@
+file '00-home.png'
+duration 9
+file '01-estimator.png'
+duration 11
+file '02-caller.png'
+duration 13
+file '03-closer.png'
+duration 13
+file '04-award.png'
+duration 11
+file '04-award.png'
+duration 1
