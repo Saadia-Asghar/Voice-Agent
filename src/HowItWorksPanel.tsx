@@ -41,10 +41,10 @@ export function HowItWorksPanel({ onStartDemo }: { onStartDemo?: () => void }) {
         <article className="how-flow-card">
           <span className="how-flow-step">2</span>
           <MapPin size={18} />
-          <strong>Vendors (where they come from)</strong>
+          <strong>Vendors</strong>
           <p>
-            <b>Now:</b> live web search (Tavily) finds repair shops near your site and extracts phone numbers, merged with your approved vendor list.
-            <b> Dial vendor</b> places a real outbound call when Twilio / ElevenLabs phone IDs are configured.
+            BenchDial finds nearby repair shops (web search + your approved list) and pulls phone numbers when available.
+            If search fails, the demo sample vendors still load so you can finish the walkthrough.
           </p>
         </article>
         <article className="how-flow-arrow" aria-hidden="true"><ArrowRight /></article>
@@ -53,9 +53,9 @@ export function HowItWorksPanel({ onStartDemo }: { onStartDemo?: () => void }) {
           <Bot size={18} />
           <strong>Voice buyer agent</strong>
           <p>
-            <b>Sample call:</b> instant demo transcript + quote.
-            <b> Browser live call:</b> your mic + ElevenLabs agent in the tab.
-            <b> Dial vendor:</b> real PSTN outbound via ElevenLabs↔Twilio (preferred) or Twilio TwiML fallback.
+            <b>Sample call:</b> instant demo quote (always works).
+            <b> Live in browser:</b> talk with your mic.
+            <b> Dial vendor:</b> real phone call when connected — otherwise the demo continues.
           </p>
         </article>
         <article className="how-flow-arrow" aria-hidden="true"><ArrowRight /></article>

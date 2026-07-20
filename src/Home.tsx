@@ -39,51 +39,55 @@ export function Home({ onOpen, onJudgeDemo, proof }: { onOpen: (step: WorkflowSt
 
     <section className="visual-hero">
       <div className="visual-hero-copy">
-        <p className="home-challenge-line">The Negotiator · ElevenLabs × Hack-Nation</p>
-        <h1>Something broke at work. Get three repair quotes — without an afternoon of phone calls.</h1>
-        <p>For facility managers, lab ops, and anyone who fixes equipment by phone: lock one repair brief, let a voice agent call three vendors on the same job, compare fairly, and approve a memo you can forward to purchasing.</p>
+        <p className="brand-hero-mark">BenchDial</p>
+        <p className="home-challenge-line">Phone quotes. Fair comparison. You decide.</p>
+        <h1>Get three repair quotes without spending your afternoon on the phone.</h1>
+        <p>
+          Equipment breaks. Shops only quote by phone. BenchDial locks one repair job, calls vendors for you,
+          then shows a side-by-side memo you can send to purchasing.
+        </p>
         <div className="hero-cta-row">
-          <button className="visual-primary" onClick={onJudgeDemo}>Start demo — no login <ArrowRight /></button>
+          <button className="visual-primary" onClick={onJudgeDemo}>Try the live demo <ArrowRight /></button>
           <button type="button" className="visual-secondary" onClick={() => onOpen("Scope")}>Build a repair brief</button>
         </div>
-        <small><ShieldCheck /> Judges can click through the full flow live — sample calls, ranking slider, and approval — in about 3 minutes. No account.</small>
+        <small><ShieldCheck /> No login needed. Sample path always works — about 3 minutes.</small>
       </div>
 
-      <div className="decision-canvas" aria-label="Repair brief flows into vendor calls and award recommendation">
+      <div className="decision-canvas" aria-label="How BenchDial turns one repair job into three quotes and a recommendation">
         <section className="canvas-scope">
-          <header><span>01</span> REPAIR BRIEF</header>
+          <header><span>1</span> YOUR JOB</header>
           <div className="scope-visual-card">
-            <div className="scope-locked"><Check /> Brief locked</div>
+            <div className="scope-locked"><Check /> Same brief for every shop</div>
             <div className="instrument-visual" aria-hidden="true"><span /><span /><span /><span /></div>
             <strong>SpinPro X2</strong>
-            <small>Centrifuge · Error E17</small>
+            <small>Broken centrifuge · Error E17</small>
             <dl><div><dt>Work</dt><dd>Drive module</dd></div><div><dt>Calibration</dt><dd>Required</dd></div><div><dt>Location</dt><dd>On-site</dd></div></dl>
-            <div className="scope-id"><LockKeyhole /> {SCOPE_PRINT_SHORT}</div>
+            <div className="scope-id"><LockKeyhole /> Brief {SCOPE_PRINT_SHORT}</div>
           </div>
         </section>
 
         <div className="canvas-connector" aria-hidden="true"><i /><i /><i /></div>
 
         <section className="canvas-calls">
-          <header><span>02</span> CALL VENDORS</header>
+          <header><span>2</span> THREE QUOTES</header>
           {providers.map((provider) => <article key={provider.name}>
             <div className="call-name"><i>{provider.name.slice(0, 2).toUpperCase()}</i><strong>{provider.name}</strong><em><span /> {provider.outcome}</em></div>
             <div className="waveform" aria-hidden="true">{provider.bars.map((height, bar) => <i key={bar} style={{ height }} />)}</div>
-            <dl><div><dt>Total</dt><dd>{provider.total}</dd></div><div><dt>Warranty</dt><dd>{provider.warranty}</dd></div><div><dt>ETA</dt><dd>{provider.eta}</dd></div></dl>
+            <dl><div><dt>Price</dt><dd>{provider.total}</dd></div><div><dt>Warranty</dt><dd>{provider.warranty}</dd></div><div><dt>ETA</dt><dd>{provider.eta}</dd></div></dl>
           </article>)}
         </section>
 
         <div className="canvas-arrow" aria-hidden="true"><ArrowRight /></div>
 
         <section className="canvas-award">
-          <header><span>03</span> COMPARE</header>
+          <header><span>3</span> YOUR MEMO</header>
           <div className="award-visual-card">
             <span className="award-trophy"><Trophy /></span>
-            <small>RECOMMENDED</small>
+            <small>BEST FIT</small>
             <h2>OEM Precision</h2>
             <ul><li><Check /> Fastest repair</li><li><Check /> Full job covered</li><li><Check /> Best warranty</li></ul>
             <div><small>TOTAL WITH DOWNTIME</small><strong>$5,750</strong></div>
-            <button onClick={() => onOpen("Award memo")}>View memo <ArrowRight /></button>
+            <button onClick={() => onOpen("Award memo")}>Open award memo <ArrowRight /></button>
           </div>
         </section>
       </div>

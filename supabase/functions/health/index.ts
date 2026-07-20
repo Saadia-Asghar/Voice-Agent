@@ -20,7 +20,7 @@ Deno.serve(async (request) => {
     tavily_key: Boolean(Deno.env.get("TAVILY_API_KEY")),
     elevenlabs_phone_number_id: Boolean(Deno.env.get("ELEVENLABS_AGENT_PHONE_NUMBER_ID")),
     twilio_sid: Boolean(Deno.env.get("TWILIO_ACCOUNT_SID")),
-    twilio_token: Boolean(Deno.env.get("TWILIO_AUTH_TOKEN")),
+    twilio_token: Boolean(Deno.env.get("TWILIO_API_KEY_SECRET") || Deno.env.get("TWILIO_AUTH_TOKEN")),
     twilio_from: Boolean(Deno.env.get("TWILIO_PHONE_NUMBER")),
   };
 

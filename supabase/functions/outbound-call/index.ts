@@ -6,6 +6,11 @@ const corsHeaders = {
 const HASH_RE = /^sha256:[a-f0-9]{64}$/;
 const E164_RE = /^\+[1-9]\d{7,14}$/;
 
+/** Trial-safe defaults: keep spend predictable for client demos. */
+const MAX_DIALS_PER_DAY = Number(Deno.env.get("TWILIO_MAX_DIALS_PER_DAY") || "5");
+const MAX_RECORD_SECONDS = Number(Deno.env.get("TWILIO_MAX_RECORD_SECONDS") || "45");
+const TRIAL_MODE = (Deno.env.get("TWILIO_TRIAL_MODE") || "true").toLowerCase() !== "false";
+
 function toE164(raw: string): string | null {
   const trimmed = raw.trim();
   if (E164_RE.test(trimmed)) return trimmed;
@@ -17,6 +22,12 @@ function toE164(raw: string): string | null {
 
 function isDemoNumber(e164: string) {
   return /^\+1\d{3}555\d{4}$/.test(e164);
+}
+
+function startOfUtcDayIso() {
+  const d = new Date();
+  d.setUTCHours(0, 0, 0, 0);
+  return d.toISOString();
 }
 
 async function dialViaElevenLabs(input: {
@@ -62,6 +73,7 @@ async function dialViaElevenLabs(input: {
 async function dialViaTwilioRest(input: {
   accountSid: string;
   authToken: string;
+  authUser?: string;
   fromNumber: string;
   toNumber: string;
   statusCallback: string | null;
@@ -78,7 +90,7 @@ async function dialViaTwilioRest(input: {
   <Say voice="Polly.Joanna">
     If you can quote, please leave your package total, call-out fee, calibration, warranty, and response time after the tone.
   </Say>
-  <Record maxLength="120" playBeep="true" />
+  <Record maxLength="${Math.max(15, Math.min(90, MAX_RECORD_SECONDS))}" playBeep="true" />
   <Say voice="Polly.Joanna">Thank you. Goodbye.</Say>
 </Response>`;
 
@@ -97,7 +109,7 @@ async function dialViaTwilioRest(input: {
     {
       method: "POST",
       headers: {
-        Authorization: `Basic ${btoa(`${input.accountSid}:${input.authToken}`)}`,
+        Authorization: `Basic ${btoa(`${input.authUser || input.accountSid}:${input.authToken}`)}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: params,
@@ -153,6 +165,7 @@ Deno.serve(async (request) => {
     scopeShortId?: string;
     scopeJson?: string;
     negotiationStyle?: string;
+    confirmRealDial?: boolean;
   } | null;
 
   const toNumber = toE164(input?.toNumber ?? "");
@@ -163,14 +176,40 @@ Deno.serve(async (request) => {
   if (!toNumber) return Response.json({ error: "Valid E.164 phone number required (e.g. +17045550142)." }, { status: 400, headers: corsHeaders });
   if (isDemoNumber(toNumber)) {
     return Response.json({
-      error: "That is a demo 555 number. Search for real vendors first, then dial a real phone number.",
+      error: "That is a demo 555 number. Use Preview sample call instead — demo path always works.",
+      fallback: "sample",
     }, { status: 400, headers: corsHeaders });
   }
   if (!scopeHash || !HASH_RE.test(scopeHash)) {
-    return Response.json({ error: "Locked ScopePrint hash required before outbound dial." }, { status: 400, headers: corsHeaders });
+    return Response.json({ error: "Lock a repair brief first, then dial." }, { status: 400, headers: corsHeaders });
   }
 
   const db = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+
+  // Trial spend guardrail: cap outbound dials per UTC day (default 5).
+  const { count: dialsToday } = await db
+    .from("audit_events")
+    .select("id", { count: "exact", head: true })
+    .eq("event_type", "outbound_dial_started")
+    .gte("created_at", startOfUtcDayIso());
+  if ((dialsToday ?? 0) >= MAX_DIALS_PER_DAY) {
+    return Response.json({
+      error: `Daily dial limit reached (${MAX_DIALS_PER_DAY}). Trial mode protects spend — use Preview sample call for the client demo.`,
+      fallback: "sample",
+      trialMode: TRIAL_MODE,
+      dialsToday: dialsToday ?? 0,
+      maxDialsPerDay: MAX_DIALS_PER_DAY,
+    }, { status: 429, headers: corsHeaders });
+  }
+
+  if (TRIAL_MODE && !input?.confirmRealDial) {
+    return Response.json({
+      error: "Trial mode: real dials cost Twilio minutes. Pass confirmRealDial=true only when you intend to place a live call. Sample preview is free.",
+      fallback: "sample",
+      trialMode: true,
+      hint: "Client demos should use Preview sample call. Real dial is optional.",
+    }, { status: 400, headers: corsHeaders });
+  }
 
   let { data: provider } = await db.from("providers").select("id").eq("display_name", vendorName).limit(1).maybeSingle();
   if (!provider) {
@@ -218,7 +257,8 @@ Deno.serve(async (request) => {
   const buyerAgentId = Deno.env.get("ELEVENLABS_BUYER_AGENT_ID");
   const phoneNumberId = Deno.env.get("ELEVENLABS_AGENT_PHONE_NUMBER_ID");
   const twilioSid = Deno.env.get("TWILIO_ACCOUNT_SID");
-  const twilioToken = Deno.env.get("TWILIO_AUTH_TOKEN");
+  const twilioToken = Deno.env.get("TWILIO_API_KEY_SECRET") || Deno.env.get("TWILIO_AUTH_TOKEN");
+  const twilioAuthUser = Deno.env.get("TWILIO_API_KEY_SID") || twilioSid;
   const twilioFrom = Deno.env.get("TWILIO_PHONE_NUMBER");
 
   try {
@@ -235,6 +275,7 @@ Deno.serve(async (request) => {
       result = await dialViaTwilioRest({
         accountSid: twilioSid,
         authToken: twilioToken,
+        authUser: twilioAuthUser || undefined,
         fromNumber: twilioFrom,
         toNumber,
         statusCallback: `${supabaseUrl}/functions/v1/twilio-status`,
@@ -243,7 +284,8 @@ Deno.serve(async (request) => {
       });
     } else {
       return Response.json({
-        error: "Outbound calling is not configured. Set ELEVENLABS_AGENT_PHONE_NUMBER_ID (preferred) or TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN + TWILIO_PHONE_NUMBER.",
+        error: "Outbound not configured yet — use Preview sample call (always works). Add Twilio secrets when ready.",
+        fallback: "sample",
         callId: call.id,
       }, { status: 503, headers: corsHeaders });
     }
@@ -263,6 +305,7 @@ Deno.serve(async (request) => {
         vendor_name: vendorName,
         call_sid: result.callSid,
         conversation_id: result.conversationId,
+        trial_mode: TRIAL_MODE,
       },
     });
 
@@ -272,11 +315,13 @@ Deno.serve(async (request) => {
       ...result,
       toNumber,
       vendorName,
+      trialMode: TRIAL_MODE,
     }, { headers: corsHeaders });
   } catch (reason) {
     await db.from("calls").update({ lifecycle: "failed", outcome: "failed" }).eq("id", call.id);
     return Response.json({
       error: reason instanceof Error ? reason.message : "Outbound dial failed.",
+      fallback: "sample",
       callId: call.id,
     }, { status: 502, headers: corsHeaders });
   }

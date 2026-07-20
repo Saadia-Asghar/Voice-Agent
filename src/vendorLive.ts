@@ -163,6 +163,8 @@ export async function dialVendorOutbound(input: {
       scopeHash: input.scopeHash,
       scopeShortId: input.scopeShortId,
       negotiationStyle: input.negotiationStyle,
+      // Explicit Dial vendor click = intentional live call (trial still capped server-side).
+      confirmRealDial: true,
     }),
   });
   const body = await response.json().catch(() => ({})) as {

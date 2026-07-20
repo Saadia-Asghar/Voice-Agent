@@ -337,10 +337,10 @@ export function CallRoom({
       <span className="module-kicker">Step 2 · Call Vendors</span>
       <h1>Search real shops. Dial them. Same repair brief every time.</h1>
       <p>
-        Live web search finds vendors near your site. <strong>Dial vendor</strong> places a real outbound phone call (Twilio / ElevenLabs).
-        Browser voice and sample previews still work for demos.
+        Live search finds nearby shops. <strong>Preview sample call</strong> is free and always works for demos.
+        <strong> Dial vendor</strong> is optional (trial-capped) — if it fails, keep going with samples.
       </p>
-      {judgeMode && <p className="judge-inline-tip">Judges: use <strong>Preview sample call</strong> or <strong>Compare quotes →</strong> for the fast path. Use <strong>Search again</strong> + <strong>Dial vendor</strong> when credentials are configured.</p>}
+      {judgeMode && <p className="judge-inline-tip">Client / judges: use <strong>Preview sample call</strong> → <strong>Compare quotes</strong>. Skip Dial vendor unless you want a live phone test.</p>}
     </header>
 
     <section className="scope-banner">
