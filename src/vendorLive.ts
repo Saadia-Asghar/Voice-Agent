@@ -100,13 +100,17 @@ export async function searchVendorsLive(input: {
   }
 
   try {
+    const tavilyKey = typeof window !== "undefined" ? (sessionStorage.getItem("benchdial_tavily_key") || localStorage.getItem("benchdial_tavily_key")) : null;
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${publishableKey}`,
+      apikey: publishableKey,
+      "Content-Type": "application/json",
+    };
+    if (tavilyKey) headers["x-tavily-key"] = tavilyKey.trim();
+
     const response = await fetch(`${supabaseUrl}/functions/v1/vendor-search`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${publishableKey}`,
-        apikey: publishableKey,
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify({
         site: input.site ?? "City Labs",
         region: input.region ?? "Charlotte MSA",
@@ -150,13 +154,24 @@ export async function dialVendorOutbound(input: {
   const publishableKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_ANON_KEY) as string | undefined;
   if (!supabaseUrl || !publishableKey) return { ok: false, error: "Supabase not configured." };
 
+  const twilioSid = typeof window !== "undefined" ? (sessionStorage.getItem("benchdial_twilio_sid") || localStorage.getItem("benchdial_twilio_sid")) : null;
+  const twilioToken = typeof window !== "undefined" ? (sessionStorage.getItem("benchdial_twilio_token") || localStorage.getItem("benchdial_twilio_token")) : null;
+  const twilioFrom = typeof window !== "undefined" ? (sessionStorage.getItem("benchdial_twilio_from") || localStorage.getItem("benchdial_twilio_from")) : null;
+  const phoneId = typeof window !== "undefined" ? (sessionStorage.getItem("benchdial_phone_id") || localStorage.getItem("benchdial_phone_id")) : null;
+
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${input.accessToken ?? publishableKey}`,
+    apikey: publishableKey,
+    "Content-Type": "application/json",
+  };
+  if (twilioSid) headers["x-twilio-sid"] = twilioSid.trim();
+  if (twilioToken) headers["x-twilio-token"] = twilioToken.trim();
+  if (twilioFrom) headers["x-twilio-from"] = twilioFrom.trim();
+  if (phoneId) headers["x-phone-number-id"] = phoneId.trim();
+
   const response = await fetch(`${supabaseUrl}/functions/v1/outbound-call`, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${input.accessToken ?? publishableKey}`,
-      apikey: publishableKey,
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify({
       toNumber: input.toNumber,
       vendorName: input.vendorName,

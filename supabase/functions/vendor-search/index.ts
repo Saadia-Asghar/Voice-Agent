@@ -130,7 +130,7 @@ Deno.serve(async (request) => {
 
   const url = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const tavilyKey = Deno.env.get("TAVILY_API_KEY");
+  const tavilyKey = request.headers.get("x-tavily-key") || Deno.env.get("TAVILY_API_KEY");
 
   let query = "laboratory equipment repair near Charlotte NC phone number";
   let region = "Charlotte MSA";

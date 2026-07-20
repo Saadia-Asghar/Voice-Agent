@@ -253,13 +253,13 @@ Deno.serve(async (request) => {
     call_id: call.id,
   };
 
-  const elevenKey = Deno.env.get("ELEVENLABS_API_KEY");
-  const buyerAgentId = Deno.env.get("ELEVENLABS_BUYER_AGENT_ID");
-  const phoneNumberId = Deno.env.get("ELEVENLABS_AGENT_PHONE_NUMBER_ID");
-  const twilioSid = Deno.env.get("TWILIO_ACCOUNT_SID");
-  const twilioToken = Deno.env.get("TWILIO_API_KEY_SECRET") || Deno.env.get("TWILIO_AUTH_TOKEN");
-  const twilioAuthUser = Deno.env.get("TWILIO_API_KEY_SID") || twilioSid;
-  const twilioFrom = Deno.env.get("TWILIO_PHONE_NUMBER");
+  const elevenKey = request.headers.get("x-elevenlabs-key") || Deno.env.get("ELEVENLABS_API_KEY");
+  const buyerAgentId = request.headers.get("x-buyer-agent-id") || Deno.env.get("ELEVENLABS_BUYER_AGENT_ID");
+  const phoneNumberId = request.headers.get("x-phone-number-id") || Deno.env.get("ELEVENLABS_AGENT_PHONE_NUMBER_ID");
+  const twilioSid = request.headers.get("x-twilio-sid") || Deno.env.get("TWILIO_ACCOUNT_SID");
+  const twilioToken = request.headers.get("x-twilio-token") || Deno.env.get("TWILIO_API_KEY_SECRET") || Deno.env.get("TWILIO_AUTH_TOKEN");
+  const twilioAuthUser = request.headers.get("x-twilio-user") || Deno.env.get("TWILIO_API_KEY_SID") || twilioSid;
+  const twilioFrom = request.headers.get("x-twilio-from") || Deno.env.get("TWILIO_PHONE_NUMBER");
 
   try {
     let result;
