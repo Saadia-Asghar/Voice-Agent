@@ -17,6 +17,11 @@ Deno.serve(async (request) => {
     webhook_secret: Boolean(Deno.env.get("ELEVENLABS_WEBHOOK_SECRET")),
     tool_secret: Boolean(Deno.env.get("BENCHBID_TOOL_SECRET")),
     openai_key: Boolean(Deno.env.get("OPENAI_API_KEY")),
+    tavily_key: Boolean(Deno.env.get("TAVILY_API_KEY")),
+    elevenlabs_phone_number_id: Boolean(Deno.env.get("ELEVENLABS_AGENT_PHONE_NUMBER_ID")),
+    twilio_sid: Boolean(Deno.env.get("TWILIO_ACCOUNT_SID")),
+    twilio_token: Boolean(Deno.env.get("TWILIO_AUTH_TOKEN")),
+    twilio_from: Boolean(Deno.env.get("TWILIO_PHONE_NUMBER")),
   };
 
   let database = false;
@@ -33,12 +38,18 @@ Deno.serve(async (request) => {
     }
   }
 
+  const outboundReady = Boolean(
+    (checks.elevenlabs_api_key && checks.buyer_agent_id && checks.elevenlabs_phone_number_id)
+    || (checks.twilio_sid && checks.twilio_token && checks.twilio_from),
+  );
   const ready = database && checks.elevenlabs_api_key && checks.buyer_agent_id && checks.webhook_secret && checks.tool_secret;
   return Response.json({
     ok: ready,
     service: "benchdial",
     database,
     demo_providers: tables,
+    vendor_search_ready: Boolean(checks.tavily_key) || true,
+    outbound_ready: outboundReady,
     checks,
     timestamp: new Date().toISOString(),
   }, { status: ready ? 200 : 503, headers: corsHeaders });

@@ -1,90 +1,64 @@
-import { useEffect, useMemo, useState } from "react";
-import { MapPin, Search, ShieldCheck } from "lucide-react";
-import { providerCallList } from "./caseModel";
+import { useEffect, useState } from "react";
+import { MapPin, Phone, RefreshCw, Search, ShieldCheck } from "lucide-react";
+import { searchVendorsLive, sourceLabel, type LiveVendor } from "./vendorLive";
 
-type DiscoveredVendor = {
-  name: string;
-  source: string;
-  phone: string;
-  rating: string;
-  detail: string;
-};
-
-const SOURCE_LABEL: Record<string, string> = {
-  google_maps: "Google Maps",
-  yelp: "Yelp",
-  approved_list: "Approved list",
-  demo_seed: "Demo seed",
-};
-
-export function VendorDiscovery({ site = "City Labs" }: { site?: string }) {
+export function VendorDiscovery({
+  site = "City Labs",
+  model,
+  onVendors,
+}: {
+  site?: string;
+  model?: string;
+  onVendors?: (vendors: LiveVendor[], meta: { searchMode: string; query: string; error?: string }) => void;
+}) {
   const [phase, setPhase] = useState<"searching" | "results">("searching");
+  const [vendors, setVendors] = useState<LiveVendor[]>([]);
   const [visibleCount, setVisibleCount] = useState(0);
-  const [vendors, setVendors] = useState<DiscoveredVendor[]>(() =>
-    providerCallList.map((item, index) => ({
-      name: item.name,
-      source: ["google_maps", "yelp", "approved_list"][index] ?? "demo_seed",
-      phone: item.phone,
-      rating: item.rating,
-      detail: item.discovery,
-    })),
-  );
-  const [loadSource, setLoadSource] = useState<"local" | "database" | "providers_fallback">("local");
+  const [searchMode, setSearchMode] = useState("starting");
+  const [query, setQuery] = useState("");
+  const [error, setError] = useState<string | undefined>();
+  const [busy, setBusy] = useState(false);
+
+  const runSearch = async () => {
+    setBusy(true);
+    setPhase("searching");
+    setVisibleCount(0);
+    setError(undefined);
+    const result = await searchVendorsLive({
+      site,
+      region: "Charlotte MSA",
+      category: "laboratory equipment repair",
+      model,
+    });
+    setVendors(result.vendors);
+    setSearchMode(result.searchMode);
+    setQuery(result.query);
+    setError(result.error);
+    onVendors?.(result.vendors, { searchMode: result.searchMode, query: result.query, error: result.error });
+    setPhase("results");
+    setBusy(false);
+  };
 
   useEffect(() => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-    const publishableKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_ANON_KEY) as string | undefined;
-    if (!supabaseUrl || !publishableKey) return;
-
-    void (async () => {
-      try {
-        const response = await fetch(`${supabaseUrl}/functions/v1/list-vendors?region=Charlotte%20MSA`, {
-          headers: { apikey: publishableKey },
-        });
-        if (!response.ok) return;
-        const body = await response.json() as {
-          source?: string;
-          vendors?: { display_name: string; phone: string | null; source: string; rating: string | null; notes: string | null }[];
-        };
-        if (!body.vendors?.length) return;
-        setLoadSource(body.source === "database" ? "database" : "providers_fallback");
-        setVendors(body.vendors.slice(0, 3).map((row) => ({
-          name: row.display_name,
-          source: row.source,
-          phone: row.phone ?? "—",
-          rating: row.rating ?? "—",
-          detail: row.notes ?? "Matched for laboratory equipment repair near your site.",
-        })));
-      } catch {
-        // Keep local fixture list
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    const showResults = window.setTimeout(() => setPhase("results"), 1400);
-    return () => window.clearTimeout(showResults);
-  }, []);
+    void runSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [site, model]);
 
   useEffect(() => {
     if (phase !== "results") return;
     if (visibleCount >= vendors.length) return;
-    const tick = window.setTimeout(() => setVisibleCount((count) => count + 1), 320);
+    const tick = window.setTimeout(() => setVisibleCount((count) => count + 1), 280);
     return () => window.clearTimeout(tick);
   }, [phase, visibleCount, vendors.length]);
 
-  const sourceNote = useMemo(() => {
-    if (loadSource === "database") return "Loaded from your approved vendor list in Postgres.";
-    if (loadSource === "providers_fallback") return "Loaded from seeded demo providers in Postgres.";
-    return "Showing local demo vendors — connect Supabase to load from database.";
-  }, [loadSource]);
+  const live = searchMode.includes("tavily") || searchMode === "live";
 
   return (
-    <section className="vendor-discovery" aria-label="How vendors are found">
+    <section className="vendor-discovery" aria-label="Live vendor search">
       <div className="section-title">
         <div>
-          <span className="eyebrow">Vendor discovery</span>
-          <h2>How repair shops get on your call list</h2>
+          <span className="eyebrow">Real-time vendor search</span>
+          <h2>Find repair shops near your site — then dial them</h2>
         </div>
         <Search />
       </div>
@@ -93,33 +67,49 @@ export function VendorDiscovery({ site = "City Labs" }: { site?: string }) {
         <div className="vendor-discovery-search" role="status" aria-live="polite">
           <span className="vendor-discovery-spinner" aria-hidden="true" />
           <p>
-            Searching <strong>Google Maps</strong>, <strong>Yelp</strong>, and your <strong>approved vendor list</strong> near {site}…
+            Searching the web for <strong>laboratory equipment repair</strong> near <strong>{site}</strong>…
           </p>
-          <small>{sourceNote}</small>
+          <small>Uses Tavily live search + your approved vendor list. Phone numbers are extracted when available.</small>
         </div>
       ) : (
         <>
           <p className="vendor-discovery-lede">
             <ShieldCheck size={14} />
-            Found {vendors.length} repair shops that service centrifuges near {site}. BenchDial picks the best three and calls them with your locked brief.
+            {live
+              ? `Live search found ${vendors.length} shops.`
+              : `Showing ${vendors.length} vendors (${searchMode}).`}
+            {query ? ` Query: “${query}”.` : ""}
           </p>
+          {error && <p className="vendor-discovery-note" role="status">{error}</p>}
           <div className="vendor-discovery-grid">
             {vendors.slice(0, visibleCount).map((item) => (
-              <article key={item.name}>
+              <article key={`${item.name}-${item.phoneE164 ?? item.phone}`}>
                 <header>
                   <strong>{item.name}</strong>
-                  <span className="vendor-source">{SOURCE_LABEL[item.source] ?? item.source}</span>
+                  <span className="vendor-source">{sourceLabel(item.source)}</span>
                 </header>
-                <p>{item.detail}</p>
+                <p>{item.discovery}</p>
                 <footer>
-                  <MapPin size={12} /> {item.phone} · {item.rating}
+                  <Phone size={12} /> {item.phone}
+                  {item.dialable ? " · dialable" : " · no real phone yet"}
+                  {item.rating !== "—" ? ` · ${item.rating}` : ""}
                 </footer>
+                {item.url && (
+                  <a className="vendor-link" href={item.url} target="_blank" rel="noreferrer">
+                    <MapPin size={12} /> Source page
+                  </a>
+                )}
               </article>
             ))}
           </div>
-          <p className="vendor-discovery-note">
-            <b>Upload is for repair reports only.</b> Vendor numbers come from search + your approved list in the database.
-          </p>
+          <div className="vendor-discovery-actions">
+            <button type="button" className="secondary-button" disabled={busy} onClick={() => void runSearch()}>
+              <RefreshCw size={14} /> Search again
+            </button>
+            <p className="vendor-discovery-note">
+              <b>Dialable</b> = real phone extracted (not a demo 555 number). Click <b>Dial vendor</b> in the call lanes to place an outbound call.
+            </p>
+          </div>
         </>
       )}
     </section>

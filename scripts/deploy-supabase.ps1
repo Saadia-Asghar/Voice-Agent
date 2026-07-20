@@ -9,12 +9,15 @@ $functions = @(
   "persist-scope",
   "health",
   "list-vendors",
+  "vendor-search",
+  "outbound-call",
+  "twilio-status",
   "configure-intake-tools"
 )
 
 Write-Host "Deploying $($functions.Count) edge functions to $ref..."
 foreach ($name in $functions) {
-  $noJwt = @("elevenlabs-webhook", "call-tools", "health", "list-vendors") -contains $name
+  $noJwt = @("elevenlabs-webhook", "call-tools", "health", "list-vendors", "vendor-search", "twilio-status") -contains $name
   if ($noJwt) {
     npx supabase functions deploy $name --project-ref $ref --no-verify-jwt
   } else {

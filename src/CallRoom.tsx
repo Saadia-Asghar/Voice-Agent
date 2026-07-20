@@ -1,14 +1,32 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useConversationControls, useConversationStatus } from "@elevenlabs/react";
-import { Bot, Check, MapPin, Phone, PhoneOff, RotateCcw, ShieldCheck } from "lucide-react";
+import { Check, Phone, PhoneOff, RotateCcw, ShieldCheck } from "lucide-react";
 import { useAuth } from "./Auth";
 import { SCOPE_PRINT_SHORT, providerCallList, type ConfirmedScopePrint } from "./caseModel";
 import { CallMechanicsBanner } from "./HowItWorksPanel";
 import { VendorDiscovery } from "./VendorDiscovery";
 import type { ServiceQuote, MoneyComponent, CallStatus } from "./domain";
 import { currency } from "./domain";
+import { dialVendorOutbound, fixtureVendors, sourceLabel, type LiveVendor } from "./vendorLive";
 
 type EvidenceSession = { callId: string; proof: string };
+
+const emptyQuote = (name: string, providerType = "Live search"): ServiceQuote => ({
+  provider: name,
+  providerType,
+  status: "incomplete",
+  packageTotal: null,
+  callout: { amount: null, inclusion: "unknown" },
+  calibration: { amount: null, inclusion: "unknown" },
+  parts: { amount: null, inclusion: "unknown" },
+  responseHours: null,
+  turnaroundHours: null,
+  warrantyDays: null,
+  loanerIncluded: null,
+  scopeMatch: 0,
+  unknowns: ["awaiting live outbound or browser call"],
+  evidence: [],
+});
 
 const mapComponent = (val: number | null): MoneyComponent => {
   if (val === null) return { amount: null, inclusion: "unknown" };
@@ -33,41 +51,23 @@ const mapLiveCallToServiceQuote = (
     };
     concessions?: any[];
     evidence?: any[];
-    terminalDetails?: any;
-  }
+  },
 ): ServiceQuote => {
   if (outcome !== "quote") {
-    let unknowns = ["quote"];
-    if (outcome === "callback") {
-      unknowns = ["pricing terms"];
-    } else if (outcome === "declined") {
-      unknowns = ["declined quote"];
-    }
     return {
-      provider: providerName,
-      providerType,
+      ...emptyQuote(providerName, providerType),
       status: outcome,
-      packageTotal: null,
-      callout: { amount: null, inclusion: "unknown" },
-      calibration: { amount: null, inclusion: "unknown" },
-      parts: { amount: null, inclusion: "unknown" },
-      responseHours: null,
-      turnaroundHours: null,
-      warrantyDays: null,
-      loanerIncluded: null,
-      scopeMatch: 0,
-      unknowns,
+      unknowns: outcome === "callback" ? ["pricing terms"] : outcome === "declined" ? ["declined quote"] : ["quote"],
       evidence: liveData.evidence?.map((ev: any) => ({
         id: ev.id,
         at: `Turn ${ev.turn_index}`,
-        quote: ev.excerpt
-      })) ?? []
+        quote: ev.excerpt,
+      })) ?? [],
     };
   }
 
   const quote = liveData.quote!;
   const terms = quote.itemizedTerms;
-
   return {
     provider: providerName,
     providerType,
@@ -85,8 +85,8 @@ const mapLiveCallToServiceQuote = (
     evidence: liveData.evidence?.map((ev: any) => ({
       id: ev.id,
       at: `Turn ${ev.turn_index}`,
-      quote: ev.excerpt
-    })) ?? []
+      quote: ev.excerpt,
+    })) ?? [],
   };
 };
 
@@ -107,8 +107,8 @@ const getQuoteFields = (q: ServiceQuote) => {
   ];
 };
 
-export function CallRoom({ 
-  confirmedScope, 
+export function CallRoom({
+  confirmedScope,
   customQuotes,
   setCustomQuotes,
   setCustomConcessions,
@@ -118,7 +118,7 @@ export function CallRoom({
   onOpenCloser,
   onRequestSignIn,
   judgeMode = false,
-}: { 
+}: {
   confirmedScope: ConfirmedScopePrint | null;
   customQuotes: ServiceQuote[];
   setCustomQuotes: React.Dispatch<React.SetStateAction<ServiceQuote[]>>;
@@ -136,18 +136,43 @@ export function CallRoom({
   const [running, setRunning] = useState<number | null>(null);
   const [liveLane, setLiveLane] = useState<number | null>(null);
   const [pendingLanes, setPendingLanes] = useState<number[]>([]);
+  const [dialingLanes, setDialingLanes] = useState<number[]>([]);
+  const [outboundNotes, setOutboundNotes] = useState<Record<number, string>>({});
   const [sessions, setSessions] = useState<Record<number, EvidenceSession>>({});
   const [liveError, setLiveError] = useState<string | null>(null);
+  const [vendors, setVendors] = useState<LiveVendor[]>(() => fixtureVendors());
+  const [searchMeta, setSearchMeta] = useState({ searchMode: "fixtures", query: "" });
   const { session: authSession } = useAuth();
-  const provider = providerCallList[selected];
   const scopeLabel = confirmedScope?.shortId ?? SCOPE_PRINT_SHORT;
   const scopeReady = Boolean(confirmedScope);
+  const selectedVendor = vendors[selected] ?? vendors[0];
+  const fixtureMatch = useMemo(
+    () => providerCallList.find((item) => item.name === selectedVendor?.name),
+    [selectedVendor?.name],
+  );
 
   const apiConfig = () => ({
     supabaseUrl: import.meta.env.VITE_SUPABASE_URL as string | undefined,
     publishableKey: (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_ANON_KEY) as string | undefined,
     buyerAgentId: import.meta.env.VITE_ELEVENLABS_BUYER_AGENT_ID as string | undefined,
   });
+
+  const applyVendors = (next: LiveVendor[], meta: { searchMode: string; query: string; error?: string }) => {
+    setVendors(next.slice(0, 5));
+    setSearchMeta({ searchMode: meta.searchMode, query: meta.query });
+    setSelected(0);
+    setLiveError(meta.error ?? null);
+    setCustomQuotes((current) => next.slice(0, 5).map((vendor, index) => {
+      const existing = current.find((quote) => quote.provider === vendor.name);
+      if (existing) return existing;
+      const fixture = providerCallList.find((item) => item.name === vendor.name);
+      if (fixture) {
+        const fixtureQuote = current[providerCallList.findIndex((item) => item.name === vendor.name)];
+        if (fixtureQuote) return fixtureQuote;
+      }
+      return emptyQuote(vendor.name, sourceLabel(vendor.source));
+    }));
+  };
 
   const startLiveCall = async (index: number) => {
     setLiveError(null);
@@ -157,28 +182,28 @@ export function CallRoom({
     }
     const { supabaseUrl, publishableKey, buyerAgentId } = apiConfig();
     if (!scopeReady) return setLiveError("Lock the repair brief first (Step 1) so every vendor hears the same job.");
-    if (!supabaseUrl || !publishableKey || !buyerAgentId) return setLiveError("Live calls are not available right now. Try a sample call instead.");
-    const authHeader = authSession?.access_token ?? publishableKey;
+    if (!supabaseUrl || !publishableKey || !buyerAgentId) return setLiveError("Live browser calls are not available. Try Dial vendor if Twilio is configured.");
+    const vendor = vendors[index];
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
       const response = await fetch(`${supabaseUrl}/functions/v1/elevenlabs-token`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${authHeader}`,
+          Authorization: `Bearer ${authSession?.access_token ?? publishableKey}`,
           apikey: publishableKey,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           action: "bootstrap",
           agentId: buyerAgentId,
-          provider: providerCallList[index].name,
+          provider: vendor.name,
           scopeHash: confirmedScope!.canonicalHash,
           scopeShortId: confirmedScope!.shortId,
           specification: confirmedScope!.specification,
           scopeJson: confirmedScope!.scopeJson,
         }),
       });
-      if (!response.ok) throw new Error("Could not start the live call. Try a sample call instead.");
+      if (!response.ok) throw new Error("Could not start the live browser call.");
       const { token, signedUrl, callId, sessionProof } = await response.json() as { token?: string; signedUrl?: string; callId: string; sessionProof: string };
       setSessions((current) => ({ ...current, [index]: { callId, proof: sessionProof } }));
       setLiveLane(index);
@@ -188,30 +213,26 @@ export function CallRoom({
           scope_print: confirmedScope!.shortId,
           scope_hash: confirmedScope!.canonicalHash,
           scope_json: confirmedScope!.scopeJson,
-          provider_name: providerCallList[index].name,
-          negotiation_style: providerCallList[index].negotiationType,
+          provider_name: vendor.name,
+          negotiation_style: vendor.negotiationType,
           vertical: "laboratory_equipment_repair",
           call_id: callId,
           customer_name: confirmedScope!.confirmedBy || "Saadia Asghar",
           negotiation_authority: confirmedScope!.specification.approvalAuthority || "Lab Operations Lead",
-          provider_id: providerCallList[index].name,
+          provider_id: vendor.name,
         },
         onConnect: ({ conversationId }: { conversationId: string }) => {
           void fetch(`${supabaseUrl}/functions/v1/elevenlabs-token`, {
             method: "POST",
-            headers: { Authorization: `Bearer ${authHeader}`, apikey: publishableKey, "Content-Type": "application/json" },
+            headers: { Authorization: `Bearer ${authSession?.access_token ?? publishableKey}`, apikey: publishableKey, "Content-Type": "application/json" },
             body: JSON.stringify({ action: "attach", callId, proof: sessionProof, conversationId }),
           });
         },
         onError: (msg: string) => setLiveError(String(msg)),
       };
-      if (signedUrl) {
-        startSession({ ...sessionBase, signedUrl, connectionType: "websocket" as const });
-      } else if (token) {
-        startSession({ ...sessionBase, conversationToken: token, connectionType: "webrtc" as const });
-      } else {
-        throw new Error("Live session credentials were empty.");
-      }
+      if (signedUrl) startSession({ ...sessionBase, signedUrl, connectionType: "websocket" as const });
+      else if (token) startSession({ ...sessionBase, conversationToken: token, connectionType: "webrtc" as const });
+      else throw new Error("Live session credentials were empty.");
     } catch (reason) {
       setLiveLane(null);
       setLiveError(reason instanceof Error ? reason.message : "Live call could not start.");
@@ -223,6 +244,45 @@ export function CallRoom({
     await endSession();
     if (completedLane !== null) setPendingLanes((lanes) => [...new Set([...lanes, completedLane])]);
     setLiveLane(null);
+  };
+
+  const dialOutbound = async (index: number) => {
+    setLiveError(null);
+    const vendor = vendors[index];
+    if (!scopeReady) return setLiveError("Lock the repair brief first before dialing a vendor.");
+    if (!vendor.phoneE164 || !vendor.dialable) {
+      return setLiveError(`${vendor.name} has no real phone number yet. Run live search again or pick a dialable shop.`);
+    }
+    setDialingLanes((lanes) => [...new Set([...lanes, index])]);
+    try {
+      const result = await dialVendorOutbound({
+        toNumber: vendor.phoneE164,
+        vendorName: vendor.name,
+        scopeHash: confirmedScope!.canonicalHash,
+        scopeShortId: confirmedScope!.shortId,
+        negotiationStyle: vendor.negotiationType,
+        accessToken: authSession?.access_token,
+      });
+      if (!result.ok) throw new Error(result.error ?? "Outbound dial failed.");
+      setOutboundNotes((notes) => ({
+        ...notes,
+        [index]: `${result.provider === "elevenlabs_twilio" ? "ElevenLabs+Twilio" : "Twilio"} dial started${result.callSid ? ` · ${result.callSid}` : ""}. ${result.message ?? ""}`.trim(),
+      }));
+      setCustomQuotes((current) => {
+        const copy = [...current];
+        copy[index] = {
+          ...emptyQuote(vendor.name, sourceLabel(vendor.source)),
+          status: "callback",
+          unknowns: ["outbound call in progress — waiting for vendor response"],
+          evidence: [{ id: `outbound-${Date.now()}`, at: "now", quote: `Dialed ${vendor.phoneE164}. ${result.message ?? "Call started."}` }],
+        };
+        return copy;
+      });
+    } catch (reason) {
+      setLiveError(reason instanceof Error ? reason.message : "Outbound dial failed.");
+    } finally {
+      setDialingLanes((lanes) => lanes.filter((lane) => lane !== index));
+    }
   };
 
   const verifyEvidence = async (index: number) => {
@@ -243,33 +303,26 @@ export function CallRoom({
         quote?: any;
         concessions?: any[];
         evidence?: any[];
-        terminalDetails?: any;
       };
       if (!response.ok) throw new Error("Could not verify the signed call evidence.");
       if (!data.verified) throw new Error("Still saving the call recording. Wait a moment and click Confirm call again.");
       setPendingLanes((lanes) => lanes.filter((lane) => lane !== index));
       setRecordedLanes((lanes) => [...new Set([...lanes, index])]);
-
-      const mappedQuote = mapLiveCallToServiceQuote(
-        providerCallList[index].name,
-        index === 0 ? "Manufacturer service" : index === 1 ? "Independent repair" : "Regional service",
-        data.outcome ?? "incomplete",
-        data
-      );
-
+      const vendor = vendors[index];
       setCustomQuotes((current) => {
         const copy = [...current];
-        copy[index] = mappedQuote;
+        copy[index] = mapLiveCallToServiceQuote(vendor.name, sourceLabel(vendor.source), data.outcome ?? "incomplete", data);
         return copy;
       });
-
-      if (data.concessions && data.concessions.length > 0) {
-        const mappedConcessions = data.concessions.map((c) => ({
-          at: new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-          label: `${providerCallList[index].name} concession`,
-          detail: `Field '${c.field_name}' changed from ${JSON.stringify(c.before_value)} to ${JSON.stringify(c.after_value)}.`
-        }));
-        setCustomConcessions((current) => [...current, ...mappedConcessions]);
+      if (data.concessions?.length) {
+        setCustomConcessions((current) => [
+          ...current,
+          ...data.concessions!.map((c) => ({
+            at: new Date(c.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+            label: `${vendors[index].name} concession`,
+            detail: `Field '${c.field_name}' changed from ${JSON.stringify(c.before_value)} to ${JSON.stringify(c.after_value)}.`,
+          })),
+        ]);
         onLiveLeverage?.();
       }
     } catch (reason) {
@@ -280,9 +333,12 @@ export function CallRoom({
   return <main className="workflow-screen call-screen">
     <header className="workflow-heading">
       <span className="module-kicker">Step 2 · Call Vendors</span>
-      <h1>BenchDial calls all three vendors with the same repair brief.</h1>
-      <p>Every vendor hears exactly the same job — no more repeating yourself. You can listen to a sample call for each vendor, or start a live call with your microphone.</p>
-      {judgeMode && <p className="judge-inline-tip">No account needed. Press <strong>Preview sample call</strong> on any vendor to hear the demo, then click <strong>Continue to compare →</strong> to see the results.</p>}
+      <h1>Search real shops. Dial them. Same repair brief every time.</h1>
+      <p>
+        Live web search finds vendors near your site. <strong>Dial vendor</strong> places a real outbound phone call (Twilio / ElevenLabs).
+        Browser voice and sample previews still work for demos.
+      </p>
+      {judgeMode && <p className="judge-inline-tip">Judges: use <strong>Preview sample call</strong> or <strong>Compare quotes →</strong> for the fast path. Use <strong>Search again</strong> + <strong>Dial vendor</strong> when credentials are configured.</p>}
     </header>
 
     <section className="scope-banner">
@@ -294,8 +350,8 @@ export function CallRoom({
 
     {judgeMode && (
       <section className="demo-case-banner" role="status">
-        <strong>Pinned demo path:</strong> SpinPro X2 centrifuge · Error E17 · City Labs.
-        Three vendors are already loaded with sample quotes. Click <strong>Compare quotes →</strong> anytime, or <strong>Preview sample call</strong> first.
+        <strong>Pinned demo path:</strong> SpinPro X2 · Error E17 · City Labs.
+        Sample quotes stay available. Live search + outbound dial need Tavily/Twilio secrets on Supabase.
       </section>
     )}
 
@@ -304,38 +360,25 @@ export function CallRoom({
     {onOpenCloser && (
       <section className="judge-call-actions" aria-label="Continue to comparison">
         <button type="button" className="primary-button" onClick={onOpenCloser}>Compare quotes →</button>
-        <small>Sample quotes are already filled in. Preview a call or start a live call if you want — then continue.</small>
+        <small>Compare works with sample quotes now. Dial or live-call when you want real evidence.</small>
       </section>
     )}
 
-    <VendorDiscovery site={confirmedScope?.specification.site?.split("/")[0]?.trim() ?? "City Labs"} />
-
-    <section className="call-list-panel" aria-label="Provider call list provenance">
-      <div className="section-title">
-        <div><span className="eyebrow">Who gets called</span><h2>These three shops receive your repair brief.</h2></div>
-        <MapPin />
-      </div>
-      <div className="call-list-grid">
-        {providerCallList.map((item) => (
-          <article key={item.name}>
-            <strong>{item.name}</strong>
-            <small>{item.negotiationType}</small>
-            <p>{item.discovery}</p>
-            <span>{item.phone} · {item.rating}</span>
-          </article>
-        ))}
-      </div>
-    </section>
+    <VendorDiscovery
+      site={confirmedScope?.specification.site?.split("/")[0]?.trim() ?? "City Labs"}
+      model={confirmedScope?.specification.model}
+      onVendors={applyVendors}
+    />
 
     <section className="live-call-notice">
       <ShieldCheck />
       <div>
-        <strong>{judgeMode ? "Judges: try it live — no account needed" : authSession ? "Signed in — live voice enabled" : "Live call mode"}</strong>
-        <p>{judgeMode
-          ? "Preview sample call, start a live voice call (allow mic), move the downtime slider, and approve the memo — all in real time. No login required."
-          : authSession
-            ? "Click Start live call, allow your microphone, talk to the buyer agent. End call → wait → Confirm call."
-            : "Sign in (top right) to run live voice calls. Sample calls work without an account."}</p>
+        <strong>Outbound phone + browser voice</strong>
+        <p>
+          Search mode: <b>{searchMeta.searchMode}</b>
+          {searchMeta.query ? ` · “${searchMeta.query}”` : ""}.
+          {" "}Dial vendor = real PSTN call. Start live call = browser mic + AI (role-play or connected agent).
+        </p>
       </div>
       {liveError && <span role="alert">{liveError}</span>}
     </section>
@@ -344,67 +387,92 @@ export function CallRoom({
       <section className="call-lanes">
         <div className="call-header"><span>Vendor</span><span>Status</span><span>Call transcript</span><span>Quoted terms</span><span>Result</span></div>
 
-        {providerCallList.map((item, index) => {
-          const quote = customQuotes[index];
-          const tone = quote.status === "quote" ? "good" : quote.status === "callback" ? "warn" : "bad";
-          const outcomeLabel = quote.status === "quote" ? "GOT A QUOTE" : quote.status === "callback" ? "CALLING BACK" : "DECLINED";
+        {vendors.map((item, index) => {
+          const quote = customQuotes[index] ?? emptyQuote(item.name);
+          const tone = quote.status === "quote" ? "good" : quote.status === "callback" ? "warn" : quote.status === "incomplete" ? "warn" : "bad";
+          const outcomeLabel = quote.status === "quote" ? "GOT A QUOTE" : quote.status === "callback" ? "CALLING / CALLBACK" : quote.status === "incomplete" ? "PENDING" : "DECLINED";
           const fields = getQuoteFields(quote);
-          const transcriptLines = quote.evidence && quote.evidence.length > 0
+          const fixture = providerCallList.find((lane) => lane.name === item.name);
+          const transcriptLines = quote.evidence?.length
             ? quote.evidence.map((ev) => `Live: “${ev.quote}”`)
-            : item.transcript;
+            : fixture?.transcript ?? [`No transcript yet — dial ${item.phone} or start a live browser call.`];
+          const dialing = dialingLanes.includes(index);
 
           return (
-            <article className={selected === index ? "call-lane selected-lane" : "call-lane"} key={item.name} onClick={() => setSelected(index)}>
+            <article className={selected === index ? "call-lane selected-lane" : "call-lane"} key={`${item.name}-${item.phoneE164 ?? index}`} onClick={() => setSelected(index)}>
               <div>
                 <h2>{item.name}</h2>
-                <p>{item.style}</p>
-                {liveLane === index && liveStatus === "connected" ? <span className="provenance live">ON CALL</span> : recordedLanes.includes(index) ? <span className="provenance recorded">RECORDED LIVE RUN</span> : pendingLanes.includes(index) ? <span className="provenance fixture">AWAITING WEBHOOK</span> : <span className="provenance fixture">SIMULATED FIXTURE</span>}
+                <p>{item.style} · {item.phone}</p>
+                {liveLane === index && liveStatus === "connected"
+                  ? <span className="provenance live">ON CALL</span>
+                  : dialing
+                    ? <span className="provenance live">DIALING…</span>
+                    : outboundNotes[index]
+                      ? <span className="provenance recorded">OUTBOUND STARTED</span>
+                      : recordedLanes.includes(index)
+                        ? <span className="provenance recorded">RECORDED LIVE RUN</span>
+                        : pendingLanes.includes(index)
+                          ? <span className="provenance fixture">AWAITING WEBHOOK</span>
+                          : fixture
+                            ? <span className="provenance fixture">SIMULATED FIXTURE</span>
+                            : <span className="provenance live">LIVE SEARCH</span>}
               </div>
               <div className="connection">
-                <span className={(running === index || liveLane === index) ? "connected" : ""}>{liveLane === index ? "On call…" : running === index ? "Playing sample" : "Ready"}</span>
-                <strong>{running === index || liveLane === index ? "00m 18s" : "—"}</strong>
-                {judgeMode ? (
-                  <>
-                    {liveLane === index
-                      ? <button className="primary-button" onClick={(event) => { event.stopPropagation(); void stopLiveCall(); }}><PhoneOff size={14} /> End call</button>
-                      : pendingLanes.includes(index)
-                        ? <button className="primary-button" onClick={(event) => { event.stopPropagation(); void verifyEvidence(index); }}><ShieldCheck size={14} /> Confirm call</button>
-                        : <button className="primary-button" disabled={liveLane !== null || liveStatus === "connecting"} onClick={(event) => { event.stopPropagation(); void startLiveCall(index); }}><Phone size={14} /> Start live call</button>}
-                    {running === index
-                      ? <button className="fixture-control" onClick={(event) => { event.stopPropagation(); setRunning(null); }}><PhoneOff size={14} /> Stop sample</button>
-                      : <button className="fixture-control" disabled={liveLane !== null} onClick={(event) => { event.stopPropagation(); setRunning(index); }}><RotateCcw size={13} /> Preview sample call</button>}
-                  </>
-                ) : (
-                  <>
-                    {liveLane === index ? <button onClick={(event) => { event.stopPropagation(); void stopLiveCall(); }}><PhoneOff size={14} /> End call</button> : pendingLanes.includes(index) ? <button onClick={(event) => { event.stopPropagation(); void verifyEvidence(index); }}><ShieldCheck size={14} /> Confirm call</button> : <button disabled={liveLane !== null || liveStatus === "connecting"} onClick={(event) => { event.stopPropagation(); void startLiveCall(index); }}><Phone size={14} /> Start live call</button>}
-                    {running === index ? <button className="fixture-control" onClick={(event) => { event.stopPropagation(); setRunning(null); }}><PhoneOff size={14} /> Stop sample</button> : <button className="fixture-control" disabled={liveLane !== null} onClick={(event) => { event.stopPropagation(); setRunning(index); }}><RotateCcw size={13} /> Preview sample call</button>}
-                  </>
+                <span className={(running === index || liveLane === index || dialing) ? "connected" : ""}>
+                  {dialing ? "Dialing…" : liveLane === index ? "On call…" : running === index ? "Playing sample" : item.dialable ? "Dialable" : "Ready"}
+                </span>
+                <strong>{item.dialable ? "PSTN" : "—"}</strong>
+                <button
+                  className="primary-button"
+                  disabled={dialing || liveLane !== null || !scopeReady}
+                  onClick={(event) => { event.stopPropagation(); void dialOutbound(index); }}
+                >
+                  <Phone size={14} /> Dial vendor
+                </button>
+                {liveLane === index
+                  ? <button className="fixture-control" onClick={(event) => { event.stopPropagation(); void stopLiveCall(); }}><PhoneOff size={14} /> End browser call</button>
+                  : pendingLanes.includes(index)
+                    ? <button className="fixture-control" onClick={(event) => { event.stopPropagation(); void verifyEvidence(index); }}><ShieldCheck size={14} /> Confirm call</button>
+                    : <button className="fixture-control" disabled={liveLane !== null || liveStatus === "connecting"} onClick={(event) => { event.stopPropagation(); void startLiveCall(index); }}><Phone size={14} /> Browser live call</button>}
+                {fixture && (
+                  running === index
+                    ? <button className="fixture-control" onClick={(event) => { event.stopPropagation(); setRunning(null); }}><PhoneOff size={14} /> Stop sample</button>
+                    : <button className="fixture-control" disabled={liveLane !== null} onClick={(event) => { event.stopPropagation(); setRunning(index); }}><RotateCcw size={13} /> Preview sample</button>
                 )}
               </div>
               <div className="transcript-preview"><div className={`wave ${tone}`} />{transcriptLines.map((line) => <p key={line}>{line}</p>)}</div>
               <dl>{fields.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
-              <div className={`structured-outcome ${tone}`}><strong>{outcomeLabel}</strong><small>{item.conversationPoints.join(" · ")}</small></div>
+              <div className={`structured-outcome ${tone}`}>
+                <strong>{outcomeLabel}</strong>
+                <small>{outboundNotes[index] ?? `${sourceLabel(item.source)} · ${item.negotiationType}`}</small>
+              </div>
             </article>
           );
         })}
       </section>
       <aside className="workflow-panel evidence-inspector">
-        <span className="eyebrow">What the agent said</span>
-        <h2>{provider.name}</h2>
+        <span className="eyebrow">Selected vendor</span>
+        <h2>{selectedVendor?.name}</h2>
         <blockquote>“{
-          customQuotes[selected].evidence && customQuotes[selected].evidence.length > 0
+          customQuotes[selected]?.evidence?.length
             ? customQuotes[selected].evidence[customQuotes[selected].evidence.length - 1].quote
-            : provider.transcript[provider.transcript.length - 1]
+            : fixtureMatch?.transcript[fixtureMatch.transcript.length - 1]
+              ?? `Ready to dial ${selectedVendor?.phone ?? "this vendor"}.`
         }”</blockquote>
-
-        <div><span>Key term</span><strong>{
-          customQuotes[selected].status === "quote"
-            ? `${getQuoteFields(customQuotes[selected])[3][0]}: ${getQuoteFields(customQuotes[selected])[3][1]}`
-            : `Result: ${customQuotes[selected].status.toUpperCase()}`
+        <div><span>Phone</span><strong>{selectedVendor?.phone ?? "—"}</strong></div>
+        <div><span>Dialable</span><strong>{selectedVendor?.dialable ? "Yes — real number" : "No — search for a shop with a phone"}</strong></div>
+        <div><span>Source</span><strong>{selectedVendor ? sourceLabel(selectedVendor.source) : "—"}</strong></div>
+        <div><span>Call type</span><strong>{
+          outboundNotes[selected] ? "Outbound PSTN dial"
+            : recordedLanes.includes(selected) ? "Recorded live run — webhook verified"
+              : pendingLanes.includes(selected) ? "Awaiting signed webhook…"
+                : fixtureMatch ? "Simulated fixture (demo)" : "Live search result"
         }</strong></div>
-        <div><span>Call type</span><strong>{recordedLanes.includes(selected) ? "Recorded live run — webhook verified" : pendingLanes.includes(selected) ? "Awaiting signed webhook…" : "Simulated fixture (demo)"}</strong></div>
-        <div><span>Approach</span><strong>{provider.negotiationType}</strong></div>
-        <p>{recordedLanes.includes(selected) ? "This is from your actual live call with this vendor." : "This is a pre-written sample to show you how the call goes."}</p>
+        <p>
+          {selectedVendor?.dialable
+            ? "Click Dial vendor to place a real outbound call via ElevenLabs+Twilio (preferred) or Twilio TwiML."
+            : "This shop has no real phone yet. Click Search again, or use Preview sample / Browser live call for the demo."}
+        </p>
       </aside>
     </div>
   </main>;

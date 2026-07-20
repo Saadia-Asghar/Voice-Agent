@@ -68,6 +68,9 @@ Supabase Dashboard → **Project Settings → Edge Functions → Secrets** (or C
 | `ELEVENLABS_BUYER_AGENT_ID` | Live Call Room |
 | `ELEVENLABS_INTAKE_AGENT_ID` | Scope Studio voice |
 | `ELEVENLABS_WEBHOOK_SECRET` | Webhook HMAC verify |
+| `ELEVENLABS_AGENT_PHONE_NUMBER_ID` | Outbound PSTN via ElevenLabs↔Twilio (from ElevenLabs Phone Numbers tab) |
+| `TAVILY_API_KEY` | Live vendor web search (optional — keyless fallback exists) |
+| `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_PHONE_NUMBER` | Twilio REST outbound fallback |
 | `BENCHBID_TOOL_SECRET` | `call-tools` (long random string) |
 | `SUPABASE_URL` | Auto-injected |
 | `SUPABASE_ANON_KEY` | Auto-injected |
@@ -102,7 +105,18 @@ npx supabase functions deploy extract-scope --project-ref gnzxgxvzflkystgrcfbz
 npx supabase functions deploy persist-scope --project-ref gnzxgxvzflkystgrcfbz
 npx supabase functions deploy health --project-ref gnzxgxvzflkystgrcfbz --no-verify-jwt
 npx supabase functions deploy list-vendors --project-ref gnzxgxvzflkystgrcfbz --no-verify-jwt
+npx supabase functions deploy vendor-search --project-ref gnzxgxvzflkystgrcfbz --no-verify-jwt
+npx supabase functions deploy outbound-call --project-ref gnzxgxvzflkystgrcfbz
+npx supabase functions deploy twilio-status --project-ref gnzxgxvzflkystgrcfbz --no-verify-jwt
 ```
+
+### Outbound dial setup (one-time)
+
+1. In Twilio: buy/verify a voice number → put SID, auth token, and From number in Supabase secrets.
+2. Preferred: In ElevenLabs → Phone Numbers → import that Twilio number → copy the phone number ID → set `ELEVENLABS_AGENT_PHONE_NUMBER_ID`.
+3. Assign your Buyer agent to that number.
+4. In the app: **Search again** → pick a dialable shop → **Dial vendor**.
+
 
 `--no-verify-jwt` on webhook + call-tools is **intentional** — they use HMAC / shared secret instead of browser JWT.
 

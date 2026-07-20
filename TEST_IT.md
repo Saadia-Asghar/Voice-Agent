@@ -37,6 +37,22 @@ Then test live voice:
 
 ---
 
+## Live search + real outbound dial
+
+1. Deploy functions after `npx supabase login`:
+   ```powershell
+   npm run deploy:supabase
+   ```
+2. Set secrets in Supabase:
+   - `TAVILY_API_KEY` (optional but better)
+   - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`
+   - Preferred: `ELEVENLABS_AGENT_PHONE_NUMBER_ID` (import Twilio number in ElevenLabs)
+3. Open Call vendors → wait for search → pick a shop marked **dialable** → **Dial vendor**
+
+Demo 555 numbers cannot be dialed on purpose.
+
+---
+
 ## What was added for you (already in GitHub)
 
 | Piece | What it does |

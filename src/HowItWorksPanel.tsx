@@ -43,9 +43,8 @@ export function HowItWorksPanel({ onStartDemo }: { onStartDemo?: () => void }) {
           <MapPin size={18} />
           <strong>Vendors (where they come from)</strong>
           <p>
-            <b>Today in the demo:</b> three vendors are pre-loaded for the SpinPro X2 case.
-            <b> In production:</b> BenchDial searches Google Maps, Yelp, and your approved vendor list — then picks who to call.
-            You do <em>not</em> paste vendor links or phone lists yet.
+            <b>Now:</b> live web search (Tavily) finds repair shops near your site and extracts phone numbers, merged with your approved vendor list.
+            <b> Dial vendor</b> places a real outbound call when Twilio / ElevenLabs phone IDs are configured.
           </p>
         </article>
         <article className="how-flow-arrow" aria-hidden="true"><ArrowRight /></article>
@@ -55,8 +54,8 @@ export function HowItWorksPanel({ onStartDemo }: { onStartDemo?: () => void }) {
           <strong>Voice buyer agent</strong>
           <p>
             <b>Sample call:</b> instant demo transcript + quote.
-            <b> Live call:</b> your microphone in the browser — ElevenLabs agent negotiates (demo uses AI role-play, not a real phone dial).
-            <b> Next:</b> outbound calls to real vendor numbers via Twilio.
+            <b> Browser live call:</b> your mic + ElevenLabs agent in the tab.
+            <b> Dial vendor:</b> real PSTN outbound via ElevenLabs↔Twilio (preferred) or Twilio TwiML fallback.
           </p>
         </article>
         <article className="how-flow-arrow" aria-hidden="true"><ArrowRight /></article>
@@ -102,9 +101,9 @@ export function HowItWorksPanel({ onStartDemo }: { onStartDemo?: () => void }) {
           <strong>What is working in this demo vs what is next</strong>
           <ul>
             <li><CheckIcon /> Repair brief lock, three vendor lanes, sample calls, compare, award memo — <b>working now</b></li>
-            <li><CheckIcon /> Live voice in browser (ElevenLabs) — <b>judges can try now</b> with mic, no account</li>
-            <li><PendingIcon /> Live Google/Yelp vendor search in UI — <b>shown as provenance story</b>; demo uses a fixed vendor list</li>
-            <li><PendingIcon /> Twilio outbound to real +1 vendor numbers — <b>planned</b> (env vars exist, not wired in app yet)</li>
+            <li><CheckIcon /> Live voice in browser (ElevenLabs) — <b>working</b> with mic</li>
+            <li><CheckIcon /> Real-time vendor search (Tavily + approved list) — <b>wired</b>; needs <code>TAVILY_API_KEY</code> for best results (keyless fallback available)</li>
+            <li><CheckIcon /> Outbound PSTN dial — <b>wired</b>; needs Twilio secrets and/or <code>ELEVENLABS_AGENT_PHONE_NUMBER_ID</code></li>
           </ul>
         </div>
       </div>
@@ -122,10 +121,6 @@ function CheckIcon() {
   return <span className="how-status-ok" aria-hidden="true">✓</span>;
 }
 
-function PendingIcon() {
-  return <span className="how-status-next" aria-hidden="true">→</span>;
-}
-
 export function CallMechanicsBanner() {
   return (
     <aside className="call-mechanics-banner" aria-label="How vendor calls work">
@@ -135,7 +130,8 @@ export function CallMechanicsBanner() {
         <p>
           <b>Sample call</b> = pre-written quote you can preview instantly.
           <b> Live call</b> = you talk in the browser; the ElevenLabs buyer agent negotiates (AI plays the vendor side for the hackathon demo).
-          Real phone calls to the numbers shown would use <b>Twilio</b> in a production version — not dialed automatically in this web demo yet.
+          <b>Dial vendor</b> places a real outbound phone call when Twilio / ElevenLabs phone number ID is configured on Supabase.
+          Demo 555 numbers cannot be dialed — run live search for a real phone first.
         </p>
       </div>
     </aside>
