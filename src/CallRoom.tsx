@@ -185,7 +185,13 @@ export function CallRoom({
     if (!supabaseUrl || !publishableKey || !buyerAgentId) return setLiveError("Live browser calls are not available. Try Dial vendor if Twilio is configured.");
     const vendor = vendors[index];
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+      } catch (micErr) {
+        if (micErr instanceof DOMException && micErr.name === "NotAllowedError") {
+          throw new Error("Microphone access denied. Please click the lock icon in your browser address bar and enable Microphone permissions for this site.");
+        }
+      }
       const response = await fetch(`${supabaseUrl}/functions/v1/elevenlabs-token`, {
         method: "POST",
         headers: {

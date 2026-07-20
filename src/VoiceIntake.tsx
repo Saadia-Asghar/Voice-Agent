@@ -100,7 +100,13 @@ export function VoiceIntake({ onStarted, onDraftPatch }: Props) {
       return;
     }
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+      } catch (micErr) {
+        if (micErr instanceof DOMException && micErr.name === "NotAllowedError") {
+          throw new Error("Microphone permission denied by browser. Please click the lock icon in your address bar and allow Microphone access, or use the Simulate Voice button below.");
+        }
+      }
       const headers: Record<string, string> = {
         apikey: publishableKey,
         Authorization: `Bearer ${session?.access_token ?? publishableKey}`,
