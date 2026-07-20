@@ -26,14 +26,14 @@ const providers = [
 
 export function Home({ onOpen, onJudgeDemo, proof }: { onOpen: (step: WorkflowStep) => void; onJudgeDemo: () => void; proof: ProofRow[] }) {
   return <main className="home-screen visual-home" id="home">
-    <section className="judge-strip" aria-label="Quick start">
-      <strong>Try it now — no login needed</strong>
+    <section className="judge-strip" aria-label="Judges — try live">
+      <strong>Judges — try it live in real time (no login)</strong>
       <ol>
-        <li>Click <b>Start demo</b> — repair brief loads automatically</li>
-        <li>Click <b>Compare quotes →</b> (skip calls if you want)</li>
-        <li>Drag downtime slider → <b>Open Award memo</b> → Approve</li>
+        <li><b>Start demo</b> — brief + three vendors load instantly</li>
+        <li><b>Preview sample call</b> or <b>Start live call</b> with your mic</li>
+        <li>Drag downtime slider → <b>Approve</b> the award memo yourself</li>
       </ol>
-      <button type="button" onClick={onJudgeDemo}>Start demo walkthrough <ArrowRight size={14} /></button>
+      <button type="button" onClick={onJudgeDemo}>Open live demo <ArrowRight size={14} /></button>
     </section>
 
     <section className="visual-hero">
@@ -45,7 +45,7 @@ export function Home({ onOpen, onJudgeDemo, proof }: { onOpen: (step: WorkflowSt
           <button className="visual-primary" onClick={onJudgeDemo}>Start demo — no login <ArrowRight /></button>
           <button type="button" className="visual-secondary" onClick={() => onOpen("Scope")}>Build a repair brief</button>
         </div>
-        <small><ShieldCheck /> No account needed. Walk through the full flow in about 3 minutes.</small>
+        <small><ShieldCheck /> Judges can click through the full flow live — sample calls, ranking slider, and approval — in about 3 minutes. No account.</small>
       </div>
 
       <div className="decision-canvas" aria-label="Repair brief flows into vendor calls and award recommendation">

@@ -151,7 +151,7 @@ export function CallRoom({
 
   const startLiveCall = async (index: number) => {
     setLiveError(null);
-    if (!authSession && onRequestSignIn) {
+    if (!authSession && !judgeMode && onRequestSignIn) {
       onRequestSignIn();
       return;
     }
@@ -330,11 +330,11 @@ export function CallRoom({
     <section className="live-call-notice">
       <ShieldCheck />
       <div>
-        <strong>{authSession ? "Signed in — live voice enabled" : judgeMode ? "Sample calls: no sign-in needed" : "Live call mode"}</strong>
-        <p>{authSession
-          ? "Click Start live call, allow your microphone, talk to the buyer agent. End call → wait → Confirm call."
-          : judgeMode
-            ? "For the video demo, use Preview sample call or skip straight to Compare quotes →. For live voice, sign in (top right) first."
+        <strong>{judgeMode ? "Judges: try it live — no account needed" : authSession ? "Signed in — live voice enabled" : "Live call mode"}</strong>
+        <p>{judgeMode
+          ? "Preview sample call, start a live voice call (allow mic), move the downtime slider, and approve the memo — all in real time. No login required."
+          : authSession
+            ? "Click Start live call, allow your microphone, talk to the buyer agent. End call → wait → Confirm call."
             : "Sign in (top right) to run live voice calls. Sample calls work without an account."}</p>
       </div>
       {liveError && <span role="alert">{liveError}</span>}

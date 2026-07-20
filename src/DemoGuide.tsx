@@ -7,7 +7,7 @@ const checklist: { id: StepId; short: string; doNow: string; skip?: string }[] =
     id: "Call room",
     short: "Call vendors",
     doNow: "Click the blue Compare quotes → button (top bar or big button below). You do NOT need to start a call first — sample quotes are already filled in.",
-    skip: "Optional: click Preview sample call on any vendor row to hear a demo transcript.",
+    skip: "Try live: Preview sample call or Start live call (allow mic) — then Compare quotes →.",
   },
   {
     id: "Deal room",
@@ -38,8 +38,8 @@ export function DemoGuide({
       <div className="demo-guide-head">
         <Sparkles size={16} />
         <div>
-          <strong>Your 3-minute demo script</strong>
-          <small>Follow these clicks — no login needed. Case: SpinPro X2 · Error E17.</small>
+          <strong>Live demo — judges click through in real time</strong>
+          <small>No login. Try sample calls, live voice (mic), downtime slider, and approve the memo yourself.</small>
         </div>
       </div>
 

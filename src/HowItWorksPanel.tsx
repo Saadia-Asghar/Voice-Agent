@@ -102,7 +102,7 @@ export function HowItWorksPanel({ onStartDemo }: { onStartDemo?: () => void }) {
           <strong>What is working in this demo vs what is next</strong>
           <ul>
             <li><CheckIcon /> Repair brief lock, three vendor lanes, sample calls, compare, award memo — <b>working now</b></li>
-            <li><CheckIcon /> Live voice in browser (ElevenLabs) — <b>working</b> when mic + API keys are configured</li>
+            <li><CheckIcon /> Live voice in browser (ElevenLabs) — <b>judges can try now</b> with mic, no account</li>
             <li><PendingIcon /> Live Google/Yelp vendor search in UI — <b>shown as provenance story</b>; demo uses a fixed vendor list</li>
             <li><PendingIcon /> Twilio outbound to real +1 vendor numbers — <b>planned</b> (env vars exist, not wired in app yet)</li>
           </ul>
