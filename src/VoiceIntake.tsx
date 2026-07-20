@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useConversationClientTool, useConversationControls, useConversationStatus } from "@elevenlabs/react";
 import { Mic, PhoneOff, ShieldCheck } from "lucide-react";
 import { useAuth } from "./Auth";
@@ -40,6 +40,14 @@ function nonEmptyPatch(next: ScopeDraft): Partial<ScopeDraft> {
   return patch;
 }
 
+function friendlyVoiceError(raw: string) {
+  const text = raw.toLowerCase();
+  if (text.includes("signal connection") || text.includes("websocket")) {
+    return "Voice link blocked. Try Load demo repair case on the right, or upload a document instead.";
+  }
+  return raw;
+}
+
 export function VoiceIntake({ onStarted, onDraftPatch }: Props) {
   const { startSession, endSession } = useConversationControls();
   const { status, message } = useConversationStatus();
@@ -50,6 +58,7 @@ export function VoiceIntake({ onStarted, onDraftPatch }: Props) {
   draftSink.current = onDraftPatch;
   const startedSink = useRef(onStarted);
   startedSink.current = onStarted;
+  const sawConnecting = useRef(false);
 
   useConversationClientTool("update_scope_draft", (params) => {
     draftSink.current?.(nonEmptyPatch(patchDraftFromVoiceScope(params as Record<string, unknown>, emptyDraft())));
@@ -67,6 +76,18 @@ export function VoiceIntake({ onStarted, onDraftPatch }: Props) {
     setLastToolNote("Voice scope written into ScopePrint draft — review conflicts, then lock.");
     return "Scope fields saved to the Estimator draft. Ask the human to resolve conflicts and lock ScopePrint. Do not invent a hash.";
   });
+
+  useEffect(() => {
+    if (status === "connecting") sawConnecting.current = true;
+    if (status === "connected") {
+      setError(null);
+      sawConnecting.current = false;
+    }
+    if (status === "disconnected" && sawConnecting.current && message) {
+      setError(friendlyVoiceError(message));
+      sawConnecting.current = false;
+    }
+  }, [status, message]);
 
   const start = async () => {
     setError(null);
@@ -86,24 +107,43 @@ export function VoiceIntake({ onStarted, onDraftPatch }: Props) {
       };
       const response = await fetch(`${supabaseUrl}/functions/v1/elevenlabs-token?agent_id=${encodeURIComponent(agentId)}`, { headers });
       if (!response.ok) throw new Error("Could not authorize the voice session.");
-      const { token } = (await response.json()) as { token: string };
+      const body = (await response.json()) as { token?: string; signedUrl?: string };
       onStarted?.();
-      startSession({ conversationToken: token, userId: crypto.randomUUID() });
+      // Prefer WebSocket signed URL — LiveKit WebRTC often fails behind firewalls/VPNs.
+      if (body.signedUrl) {
+        startSession({
+          signedUrl: body.signedUrl,
+          connectionType: "websocket",
+          userId: crypto.randomUUID(),
+          onError: (msg) => setError(friendlyVoiceError(String(msg))),
+        });
+        return;
+      }
+      if (body.token) {
+        startSession({
+          conversationToken: body.token,
+          connectionType: "webrtc",
+          userId: crypto.randomUUID(),
+          onError: (msg) => setError(friendlyVoiceError(String(msg))),
+        });
+        return;
+      }
+      throw new Error("Voice session credentials were empty.");
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Voice intake could not start.");
+      setError(reason instanceof Error ? friendlyVoiceError(reason.message) : "Voice intake could not start.");
     }
   };
 
   return <div className="live-intake">
     <div>
-      <span className="eyebrow">ElevenLabs Estimator agent</span>
-      <strong>{status === "connected" ? "Live intake connected" : "Voice intake ready"}</strong>
-      <small>{message ?? (session ? "Signed in — live intake uses your buyer seat." : "Demo mode: Estimator voice is open without sign-in.")}</small>
+      <span className="eyebrow">Talk to the voice agent</span>
+      <strong>{status === "connected" ? "Listening — describe the fault" : "Ready to start"}</strong>
+      <small>{message ?? (session ? "Signed in — your account is active." : "No account needed — just click Start and allow your microphone.")}</small>
     </div>
     {status === "connected"
-      ? <button className="secondary-button" onClick={() => void endSession()}><PhoneOff size={16} /> End interview</button>
-      : <button className="primary-button" onClick={() => void start()} disabled={status === "connecting"}><Mic size={16} /> {status === "connecting" ? "Connecting…" : "Start live interview"}</button>}
-    <small className="human-note"><ShieldCheck size={13} /> When the agent calls submit_confirmed_scope, fields write into the ScopePrint form. Unlock is still required for live Call Room lanes.</small>
+      ? <button className="secondary-button" onClick={() => void endSession()}><PhoneOff size={16} /> End conversation</button>
+      : <button className="primary-button" onClick={() => void start()} disabled={status === "connecting"}><Mic size={16} /> {status === "connecting" ? "Connecting…" : "Start voice interview"}</button>}
+    <small className="human-note"><ShieldCheck size={13} /> Mic not working? Click <strong>Load demo repair case</strong> in the checklist on the right to skip ahead.</small>
     {lastToolNote && <p className="human-note" role="status">{lastToolNote}</p>}
     {error && <p className="warning" role="alert">{error}</p>}
   </div>;

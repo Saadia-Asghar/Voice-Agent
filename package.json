@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:sandbox": "pnpm --dir sandbox-demo run build",
+    "deploy:sandbox": "vercel deploy --prod --yes --project benchdial-sandbox --local-config sandbox-demo/vercel.json",
     "test": "vitest run && node scripts/check-agent-prompts.mjs",
     "preview": "vite preview"
   },

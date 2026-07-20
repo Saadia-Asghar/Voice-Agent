@@ -1,0 +1,234 @@
+/* BenchDial sandbox — separate demo app only (sandbox.html) */
+.sandbox-app {
+  min-height: 100vh;
+  padding-bottom: 220px;
+  background: #f7f8fc;
+}
+.sandbox-topbar {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px clamp(18px, 4vw, 48px);
+  border-bottom: 1px solid #d5dcf5;
+  background: linear-gradient(90deg, #eef2ff, #fff);
+}
+.sandbox-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sandbox-brand .brand-mark {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #2c5cf3;
+}
+.sandbox-brand strong {
+  display: block;
+  font-size: 16px;
+}
+.sandbox-brand small {
+  color: #6a7182;
+  font-size: 11px;
+}
+.sandbox-app-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid #d4d6df;
+  border-radius: 8px;
+  color: #3d404a;
+  background: #fff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 800;
+}
+.sandbox-welcome {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px clamp(20px, 4vw, 48px);
+  display: grid;
+  gap: 18px;
+}
+.sandbox-welcome h1 {
+  margin: 0;
+  font-size: clamp(32px, 4vw, 48px);
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+}
+.sandbox-welcome > p {
+  margin: 0;
+  color: #4e5360;
+  font-size: 17px;
+  line-height: 1.55;
+}
+.sandbox-scenario {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sandbox-scenario li {
+  padding: 10px 12px;
+  border: 1px solid #d9def0;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 13px;
+  color: #555b69;
+}
+.sandbox-scenario strong {
+  color: #2c5cf3;
+  margin-right: 6px;
+}
+.sandbox-pitch-card {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid #d5dcf5;
+  border-radius: 14px;
+  background: #fff;
+}
+.sandbox-pitch-card p {
+  margin: 0;
+  color: #3d4558;
+  font-size: 14px;
+  line-height: 1.55;
+  font-style: italic;
+}
+.sandbox-badge {
+  display: inline-block;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: #fff;
+  background: #2c5cf3;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.sandbox-bar {
+  position: fixed;
+  bottom: 12px;
+  right: 16px;
+  left: 16px;
+  z-index: 20;
+  max-width: 320px;
+  margin-left: auto;
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #d5dcf5;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 20px 50px rgba(31, 39, 72, 0.14);
+}
+.sandbox-bar-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: start;
+}
+.sandbox-bar-head strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 15px;
+}
+.sandbox-bar-head p {
+  margin: 4px 0 0;
+  color: #6a7182;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.sandbox-icon-btn {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d4d6df;
+  border-radius: 8px;
+  background: #fff;
+  color: #555b69;
+  cursor: pointer;
+  text-decoration: none;
+}
+.sandbox-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+.sandbox-steps li {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 10px;
+  border: 1px solid #e4e8f4;
+  border-radius: 10px;
+  background: #f8f9fd;
+}
+.sandbox-steps li.current {
+  border-color: #2c5cf3;
+  background: #eef2ff;
+}
+.sandbox-steps li.done { opacity: 0.72; }
+.sandbox-steps li > span {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #2c5cf3;
+  font-size: 11px;
+  font-weight: 850;
+}
+.sandbox-steps li strong {
+  display: block;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.sandbox-steps li button {
+  margin-top: 6px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid #2c5cf3;
+  border-radius: 6px;
+  color: #2c5cf3;
+  background: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.sandbox-actions {
+  display: grid;
+  gap: 8px;
+}
+.sandbox-secondary {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #d4d6df;
+  border-radius: 8px;
+  color: #3d404a;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+@media (max-width: 720px) {
+  .sandbox-bar { max-width: none; }
+  .sandbox-welcome { padding: 32px 16px; }
+}

@@ -7,6 +7,7 @@ import {
   confirmScopePrint,
   defaultScopeDraft,
   extractScopeFromFile,
+  judgeReadyScopeDraft,
   type ConfirmedScopePrint,
   type ConflictChoice,
   type ExtractSource,
@@ -18,9 +19,10 @@ type Props = {
   onConfirm: (scope: ConfirmedScopePrint) => void;
   onReset: () => void;
   onOpenCalls: () => void;
+  judgeMode?: boolean;
 };
 
-export function ScopeStudio({ confirmedScope, onConfirm, onReset, onOpenCalls }: Props) {
+export function ScopeStudio({ confirmedScope, onConfirm, onReset, onOpenCalls, judgeMode = false }: Props) {
   const { session } = useAuth();
   const [draft, setDraft] = useState<ScopeDraft>(defaultScopeDraft);
   const [locking, setLocking] = useState(false);
@@ -69,91 +71,117 @@ export function ScopeStudio({ confirmedScope, onConfirm, onReset, onOpenCalls }:
 
   return <main className="workflow-screen scope-screen">
     <header className="workflow-heading">
-      <span className="module-kicker">01 · The Estimator</span>
-      <h1>Build one job spec every provider must quote.</h1>
-      <p>Challenge rule: voice interview and document intake write the same structured specification. You confirm it before any call — the direct attack on sight-unseen estimates.</p>
+      <span className="module-kicker">Step 1 · Repair Brief</span>
+      <h1>Describe the broken equipment once — every vendor gets the same job.</h1>
+      <p>Talk to the voice agent, upload your service report, then lock the brief. All three vendors will quote the exact same repair — no more repeating yourself on the phone.</p>
+      {judgeMode && <p className="judge-inline-tip">Just want to see the demo? Click <strong>Load demo repair case</strong> in the checklist on the right — no mic or upload needed.</p>}
     </header>
     <div className="scope-main">
       <section className="workflow-panel">
-        <div className="section-title"><div><span className="eyebrow">Voice interview · ElevenLabs Agents</span><h2>Describe the failure once.</h2></div><Mic /></div>
+        <div className="section-title"><div><span className="eyebrow">Step 1a · Talk to the agent</span><h2>Describe the fault by voice.</h2></div><Mic /></div>
         <VoiceIntake
           onStarted={() => update({ voiceInterviewTouched: true })}
           onDraftPatch={(patch) => setDraft((current) => ({ ...current, ...patch, voiceInterviewTouched: true }))}
         />
       </section>
       <section className="workflow-panel">
-        <div className="section-title"><div><span className="eyebrow">Document intake · same JSON schema</span><h2>Add a service report or prior quote.</h2></div><FileUp /></div>
+        <div className="section-title"><div><span className="eyebrow">Step 1b · Upload a document</span><h2>Add a service report or old quote.</h2></div><FileUp /></div>
         <label className="upload-zone">
           <input type="file" accept=".pdf,.png,.jpg,.jpeg,.txt" disabled={extracting} onChange={(event) => onUpload(event.target.files?.[0])} />
           <FileUp />
-          <strong>{extracting ? "Extracting fields…" : draft.documentName ?? "Drop PDF or photo here"}</strong>
+          <strong>{extracting ? "Reading document…" : draft.documentName ?? "Drop repair report here (PDF, photo, or text)"}</strong>
           <small>
             {extractSource === "model"
-              ? "Extracted by model into the shared job-spec schema"
+              ? "Repair details read from your file into the brief"
               : extractSource === "local-parse"
-                ? "Parsed locally from document text into the shared schema"
+                ? "Repair details read from document text — check below"
                 : draft.documentName
-                  ? "Demo seed applied — model extract unavailable, review before lock"
-                  : "PDF, JPG, PNG or TXT — maps to the same fields as voice"}
+                  ? "Demo file attached — review fields before locking"
+                  : "Upload the breakdown report — not a vendor list. Vendor search happens in Step 2."}
           </small>
         </label>
       </section>
       <section className="workflow-panel">
-        <div className="section-title"><div><span className="eyebrow">Shared job specification</span><h2>One schema for voice and documents.</h2></div><span className="attention"><AlertTriangle size={15} /> {conflictsResolved ? "Conflicts resolved" : "2 conflicts"}</span></div>
+        <div className="section-title"><div><span className="eyebrow">Repair brief — review &amp; edit</span><h2>Check the details before locking.</h2></div><span className="attention"><AlertTriangle size={15} /> {conflictsResolved ? "Conflicts resolved" : "2 items to resolve"}</span></div>
         <div className="scope-form">
-          <label>Instrument category<input value={resolved.instrumentCategory} onChange={(event) => update({ instrumentCategory: event.target.value })} /></label>
+          <label>Equipment type<input value={resolved.instrumentCategory} onChange={(event) => update({ instrumentCategory: event.target.value })} /></label>
           <label>Manufacturer<input value={resolved.manufacturer} onChange={(event) => update({ manufacturer: event.target.value })} /></label>
           <label>Model<input value={resolved.model} onChange={(event) => update({ model: event.target.value })} /></label>
           <label>Serial number<input value={resolved.serialNumber} onChange={(event) => update({ serialNumber: event.target.value })} placeholder="Optional / unknown" /></label>
-          <label className="wide">Symptoms<textarea value={resolved.symptoms} onChange={(event) => update({ symptoms: event.target.value })} /></label>
-          <label>Error codes<input value={resolved.errorCodes} onChange={(event) => update({ errorCodes: event.target.value })} /></label>
-          <label>Site / location<input value={resolved.site} onChange={(event) => update({ site: event.target.value })} /></label>
-          <label>Required by<input type="date" value={resolved.deadline} onChange={(event) => update({ deadline: event.target.value })} /></label>
-          <label>Calibration required<input value={resolved.calibrationRequired ? "Yes" : "No"} readOnly /></label>
-          <label>Response target<input value={`${resolved.responseHoursRequired} hours`} readOnly /></label>
-          <label>Approval authority<input value={resolved.approvalAuthority} onChange={(event) => update({ approvalAuthority: event.target.value })} /></label>
-          <label className="wide">Deliverables<textarea value={resolved.deliverables} onChange={(event) => update({ deliverables: event.target.value })} /></label>
-          <label className="wide">Constraints<textarea value={resolved.constraints} onChange={(event) => update({ constraints: event.target.value })} /></label>
+          <label className="wide">What's wrong (symptoms)<textarea value={resolved.symptoms} onChange={(event) => update({ symptoms: event.target.value })} /></label>
+          <label>Error code<input value={resolved.errorCodes} onChange={(event) => update({ errorCodes: event.target.value })} /></label>
+          <label>Location<input value={resolved.site} onChange={(event) => update({ site: event.target.value })} /></label>
+          <label>Needed by<input type="date" value={resolved.deadline} onChange={(event) => update({ deadline: event.target.value })} /></label>
+          <label>Calibration needed<input value={resolved.calibrationRequired ? "Yes" : "No"} readOnly /></label>
+          <label>Response within<input value={`${resolved.responseHoursRequired} hours`} readOnly /></label>
+          <label>Who approves the work<input value={resolved.approvalAuthority} onChange={(event) => update({ approvalAuthority: event.target.value })} /></label>
+          <label className="wide">What the vendor must deliver<textarea value={resolved.deliverables} onChange={(event) => update({ deliverables: event.target.value })} /></label>
+          <label className="wide">Site access rules<textarea value={resolved.constraints} onChange={(event) => update({ constraints: event.target.value })} /></label>
         </div>
-        <div className="evidence-legend"><span><b>V</b> Voice capture</span><span><b>D</b> Document</span><span><b>M</b> Manual confirmation</span></div>
+        <div className="evidence-legend"><span><b>V</b> From voice</span><span><b>D</b> From document</span><span><b>M</b> Entered manually</span></div>
       </section>
     </div>
     <aside className="scope-rail">
       <section className="workflow-panel conflict-panel">
-        <span className="eyebrow">Voice vs document conflicts</span>
-        <Conflict title="Response time target" voice="18h" document="24h" value={draft.responseChoice} onChange={(responseChoice) => update({ responseChoice })} />
-        <Conflict title="Calibration required" voice="Yes" document="No" value={draft.calibrationChoice} onChange={(calibrationChoice) => update({ calibrationChoice })} />
+        <span className="eyebrow">Voice said one thing, document said another</span>
+        <Conflict title="How fast do you need a response?" voice="18 hours" document="24 hours" value={draft.responseChoice} onChange={(responseChoice) => update({ responseChoice })} />
+        <Conflict title="Is calibration needed?" voice="Yes" document="No" value={draft.calibrationChoice} onChange={(calibrationChoice) => update({ calibrationChoice })} />
       </section>
       <section className="workflow-panel checklist">
-        <span className="eyebrow">Confirm before any calls</span>
-        <CheckRow ok={completeness === 9} label={`Required fields completed / ${completeness} of 9`} />
-        <CheckRow ok={conflictsResolved} label={conflictsResolved ? "Conflicts resolved" : "2 conflicts unresolved"} />
-        <CheckRow ok={hasDocument} label={hasDocument ? `Document attached: ${draft.documentName}` : "Document evidence required"} />
-        <CheckRow ok={draft.voiceInterviewTouched || Boolean(draft.symptoms.trim())} label={draft.voiceInterviewTouched ? "Live ElevenLabs voice interview started" : "Start live interview — Estimator voice is open for demo"} />
-        <CheckRow ok label="Approval authority identified" />
-        {!draft.voiceInterviewTouched && <button type="button" className="text-button" onClick={() => update({ voiceInterviewTouched: true })}>Mark voice-path fields ready for fixture walkthrough</button>}
-        <div className="scope-version"><span>Scope version</span><strong>3</strong></div>
-        <button className="primary-button" disabled={!canLock || locking} onClick={() => void lockScope()}>
-          <LockKeyhole size={16} /> {confirmedScope ? "Scope locked" : locking ? "Hashing ScopePrint…" : "Lock confirmed scope"}
-        </button>
+        <span className="eyebrow">Ready to call vendors?</span>
+        <CheckRow ok={completeness === 9} label={`${completeness} of 9 required fields filled in`} />
+        <CheckRow ok={conflictsResolved || Boolean(confirmedScope)} label={confirmedScope || conflictsResolved ? "Conflicts resolved" : "Pick a winner for each conflict above"} />
+        <CheckRow ok={hasDocument || Boolean(confirmedScope)} label={confirmedScope ? `Brief locked · ${confirmedScope.shortId}` : hasDocument ? `Document: ${draft.documentName}` : "Attach a document (or use the demo case)"} />
+        <CheckRow ok={draft.voiceInterviewTouched || Boolean(draft.symptoms.trim()) || Boolean(confirmedScope)} label={confirmedScope ? "Ready to call vendors" : draft.voiceInterviewTouched ? "Voice interview done" : "Start the voice interview or fill symptoms manually"} />
+        <CheckRow ok label="Approver identified" />
+        {!confirmedScope && !draft.voiceInterviewTouched && <button type="button" className="text-button" onClick={() => update({ voiceInterviewTouched: true })}>Skip voice — use typed symptoms only</button>}
+        {!confirmedScope && (
+          <button
+            type="button"
+            className={judgeMode ? "primary-button" : "secondary-button"}
+            disabled={locking}
+            onClick={() => {
+              setDraft(judgeReadyScopeDraft());
+              setError(null);
+              setLocking(true);
+              void confirmScopePrint(judgeReadyScopeDraft())
+                .then((scope) => {
+                  onConfirm(scope);
+                  onOpenCalls();
+                })
+                .catch((reason) => setError(reason instanceof Error ? reason.message : "Could not lock the repair brief."))
+                .finally(() => setLocking(false));
+            }}
+          >
+            <LockKeyhole size={16} /> {locking ? "Loading…" : "Load demo repair case"}
+          </button>
+        )}
+        <div className="scope-version"><span>Brief version</span><strong>{confirmedScope?.specification.version ?? 3}</strong></div>
+        {confirmedScope ? (
+          <button className="primary-button" onClick={onOpenCalls}>Next: Call vendors →</button>
+        ) : (
+          <button className="primary-button" disabled={!canLock || locking} onClick={() => void lockScope()}>
+            <LockKeyhole size={16} /> {locking ? "Locking brief…" : "Lock repair brief & call vendors"}
+          </button>
+        )}
         {error && <p className="warning" role="alert">{error}</p>}
-        {confirmedScope && <button className="secondary-button" onClick={onOpenCalls}>Open Call Room · Caller</button>}
+        {confirmedScope && <button className="secondary-button" onClick={onOpenCalls}>Go to vendor calls →</button>}
         <div className="scope-hash">
           <LockKeyhole />
           <div>
-            <span>ScopePrint</span>
-            <strong>{confirmedScope?.shortId ?? "Not generated"}</strong>
+            <span>Brief ID</span>
+            <strong>{confirmedScope?.shortId ?? "Not locked yet"}</strong>
             {confirmedScope && <small className="hash-detail">{confirmedScope.canonicalHash.slice(0, 22)}…</small>}
           </div>
         </div>
-        {confirmedScope && <button className="text-button" onClick={() => { setDraft(defaultScopeDraft()); onReset(); }}><RotateCcw size={14} /> Create a new version</button>}
+        {confirmedScope && <button className="text-button" onClick={() => { setDraft(defaultScopeDraft()); onReset(); }}><RotateCcw size={14} /> Start a new repair brief</button>}
       </section>
     </aside>
   </main>;
 }
 
 function Conflict({ title, voice, document, value, onChange }: { title: string; voice: string; document: string; value: ConflictChoice; onChange: (value: ConflictChoice) => void }) {
-  return <div className="conflict"><strong><AlertTriangle size={15} /> {title}</strong><small>Voice: {voice} / Document: {document}</small><div><button className={value === "voice" ? "selected" : ""} onClick={() => onChange("voice")}>Use voice</button><button className={value === "document" ? "selected" : ""} onClick={() => onChange("document")}>Use document</button></div></div>;
+  return <div className="conflict"><strong><AlertTriangle size={15} /> {title}</strong><small>Voice said: {voice} · Document said: {document}</small><div><button className={value === "voice" ? "selected" : ""} onClick={() => onChange("voice")}>Use voice answer</button><button className={value === "document" ? "selected" : ""} onClick={() => onChange("document")}>Use document answer</button></div></div>;
 }
 
 function CheckRow({ ok, label }: { ok: boolean; label: string }) {

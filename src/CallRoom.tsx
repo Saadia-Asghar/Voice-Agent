@@ -3,6 +3,8 @@ import { useConversationControls, useConversationStatus } from "@elevenlabs/reac
 import { Bot, Check, MapPin, Phone, PhoneOff, RotateCcw, ShieldCheck } from "lucide-react";
 import { useAuth } from "./Auth";
 import { SCOPE_PRINT_SHORT, providerCallList, type ConfirmedScopePrint } from "./caseModel";
+import { CallMechanicsBanner } from "./HowItWorksPanel";
+import { VendorDiscovery } from "./VendorDiscovery";
 import type { ServiceQuote, MoneyComponent, CallStatus } from "./domain";
 import { currency } from "./domain";
 
@@ -113,6 +115,9 @@ export function CallRoom({
   recordedLanes,
   setRecordedLanes,
   onLiveLeverage,
+  onOpenCloser,
+  onRequestSignIn,
+  judgeMode = false,
 }: { 
   confirmedScope: ConfirmedScopePrint | null;
   customQuotes: ServiceQuote[];
@@ -121,6 +126,9 @@ export function CallRoom({
   recordedLanes: number[];
   setRecordedLanes: React.Dispatch<React.SetStateAction<number[]>>;
   onLiveLeverage?: () => void;
+  onOpenCloser?: () => void;
+  onRequestSignIn?: () => void;
+  judgeMode?: boolean;
 }) {
   const { startSession, endSession } = useConversationControls();
   const { status: liveStatus } = useConversationStatus();
@@ -143,16 +151,20 @@ export function CallRoom({
 
   const startLiveCall = async (index: number) => {
     setLiveError(null);
+    if (!authSession && onRequestSignIn) {
+      onRequestSignIn();
+      return;
+    }
     const { supabaseUrl, publishableKey, buyerAgentId } = apiConfig();
-    if (!authSession) return setLiveError("Unlock live calls from the header before starting a billable provider negotiation. Fixture lanes stay available.");
-    if (!scopeReady) return setLiveError("Lock the Estimator ScopePrint before live Caller sessions so every provider hears the same job.");
-    if (!supabaseUrl || !publishableKey || !buyerAgentId) return setLiveError("Live Buyer/Closer configuration is unavailable.");
+    if (!scopeReady) return setLiveError("Lock the repair brief first (Step 1) so every vendor hears the same job.");
+    if (!supabaseUrl || !publishableKey || !buyerAgentId) return setLiveError("Live calls are not available right now. Try a sample call instead.");
+    const authHeader = authSession?.access_token ?? publishableKey;
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
       const response = await fetch(`${supabaseUrl}/functions/v1/elevenlabs-token`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${authSession.access_token}`,
+          Authorization: `Bearer ${authHeader}`,
           apikey: publishableKey,
           "Content-Type": "application/json",
         },
@@ -166,12 +178,11 @@ export function CallRoom({
           scopeJson: confirmedScope!.scopeJson,
         }),
       });
-      if (!response.ok) throw new Error("Could not authorize the live Buyer/Closer session.");
-      const { token, callId, sessionProof } = await response.json() as { token: string; callId: string; sessionProof: string };
+      if (!response.ok) throw new Error("Could not start the live call. Try a sample call instead.");
+      const { token, signedUrl, callId, sessionProof } = await response.json() as { token?: string; signedUrl?: string; callId: string; sessionProof: string };
       setSessions((current) => ({ ...current, [index]: { callId, proof: sessionProof } }));
       setLiveLane(index);
-      startSession({
-        conversationToken: token,
+      const sessionBase = {
         userId: crypto.randomUUID(),
         dynamicVariables: {
           scope_print: confirmedScope!.shortId,
@@ -185,14 +196,22 @@ export function CallRoom({
           negotiation_authority: confirmedScope!.specification.approvalAuthority || "Lab Operations Lead",
           provider_id: providerCallList[index].name,
         },
-        onConnect: ({ conversationId }) => {
+        onConnect: ({ conversationId }: { conversationId: string }) => {
           void fetch(`${supabaseUrl}/functions/v1/elevenlabs-token`, {
             method: "POST",
-            headers: { Authorization: `Bearer ${authSession.access_token}`, apikey: publishableKey, "Content-Type": "application/json" },
+            headers: { Authorization: `Bearer ${authHeader}`, apikey: publishableKey, "Content-Type": "application/json" },
             body: JSON.stringify({ action: "attach", callId, proof: sessionProof, conversationId }),
           });
         },
-      });
+        onError: (msg: string) => setLiveError(String(msg)),
+      };
+      if (signedUrl) {
+        startSession({ ...sessionBase, signedUrl, connectionType: "websocket" as const });
+      } else if (token) {
+        startSession({ ...sessionBase, conversationToken: token, connectionType: "webrtc" as const });
+      } else {
+        throw new Error("Live session credentials were empty.");
+      }
     } catch (reason) {
       setLiveLane(null);
       setLiveError(reason instanceof Error ? reason.message : "Live call could not start.");
@@ -209,12 +228,13 @@ export function CallRoom({
   const verifyEvidence = async (index: number) => {
     const session = sessions[index];
     const { supabaseUrl, publishableKey } = apiConfig();
-    if (!session || !supabaseUrl || !publishableKey || !authSession) return;
+    if (!session || !supabaseUrl || !publishableKey) return;
+    const authHeader = authSession?.access_token ?? publishableKey;
     setLiveError(null);
     try {
       const response = await fetch(`${supabaseUrl}/functions/v1/elevenlabs-token`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${authSession.access_token}`, apikey: publishableKey, "Content-Type": "application/json" },
+        headers: { Authorization: `Bearer ${authHeader}`, apikey: publishableKey, "Content-Type": "application/json" },
         body: JSON.stringify({ action: "status", callId: session.callId, proof: session.proof }),
       });
       const data = await response.json() as {
@@ -226,7 +246,7 @@ export function CallRoom({
         terminalDetails?: any;
       };
       if (!response.ok) throw new Error("Could not verify the signed call evidence.");
-      if (!data.verified) throw new Error("The post-call transcript is still processing. Try Verify evidence again shortly.");
+      if (!data.verified) throw new Error("Still saving the call recording. Wait a moment and click Confirm call again.");
       setPendingLanes((lanes) => lanes.filter((lane) => lane !== index));
       setRecordedLanes((lanes) => [...new Set([...lanes, index])]);
 
@@ -259,24 +279,42 @@ export function CallRoom({
 
   return <main className="workflow-screen call-screen">
     <header className="workflow-heading">
-      <span className="module-kicker">02 · The Caller</span>
-      <h1>Three negotiation styles. One locked scope.</h1>
-      <p>Challenge rule: every provider hears the identical confirmed job. Live calls or consenting role-play are valid — fixtures stay labeled and never become RECORDED LIVE RUN.</p>
+      <span className="module-kicker">Step 2 · Call Vendors</span>
+      <h1>BenchDial calls all three vendors with the same repair brief.</h1>
+      <p>Every vendor hears exactly the same job — no more repeating yourself. You can listen to a sample call for each vendor, or start a live call with your microphone.</p>
+      {judgeMode && <p className="judge-inline-tip">No account needed. Press <strong>Preview sample call</strong> on any vendor to hear the demo, then click <strong>Continue to compare →</strong> to see the results.</p>}
     </header>
 
     <section className="scope-banner">
       <ShieldCheck />
-      <div><span className="eyebrow">ScopePrint reused verbatim</span><strong>{scopeLabel}</strong></div>
-      <p>{scopeReady ? "Confirmed Estimator output is injected into every Caller session." : "Lock ScopePrint in the Estimator first — Call Room fixtures still preview the scenario."}</p>
+      <div><span className="eyebrow">Same repair brief for every vendor</span><strong>{scopeLabel}</strong></div>
+      <p>{scopeReady ? "Every vendor call uses this exact repair brief — no one quotes a different job." : "Go to Step 1 and lock a repair brief first. Sample calls still work for the demo."}</p>
       <Check />
     </section>
 
+    {judgeMode && (
+      <section className="demo-case-banner" role="status">
+        <strong>Pinned demo path:</strong> SpinPro X2 centrifuge · Error E17 · City Labs.
+        Three vendors are already loaded with sample quotes. Click <strong>Compare quotes →</strong> anytime, or <strong>Preview sample call</strong> first.
+      </section>
+    )}
+
+    <CallMechanicsBanner />
+
+    {onOpenCloser && (
+      <section className="judge-call-actions" aria-label="Continue to comparison">
+        <button type="button" className="primary-button" onClick={onOpenCloser}>Compare quotes →</button>
+        <small>Sample quotes are already filled in. Preview a call or start a live call if you want — then continue.</small>
+      </section>
+    )}
+
+    <VendorDiscovery site={confirmedScope?.specification.site?.split("/")[0]?.trim() ?? "City Labs"} />
+
     <section className="call-list-panel" aria-label="Provider call list provenance">
       <div className="section-title">
-        <div><span className="eyebrow">Where the call list comes from</span><h2>Market discovery — not a hand-picked script.</h2></div>
+        <div><span className="eyebrow">Who gets called</span><h2>These three shops receive your repair brief.</h2></div>
         <MapPin />
       </div>
-      <p className="call-list-lede">In production the roster is built from Google Places, Yelp Fusion, OpenStreetMap, and the customer-approved provider list for the City Labs region.</p>
       <div className="call-list-grid">
         {providerCallList.map((item) => (
           <article key={item.name}>
@@ -292,20 +330,24 @@ export function CallRoom({
     <section className="live-call-notice">
       <ShieldCheck />
       <div>
-        <strong>Live challenge mode</strong>
-        <p>A run becomes RECORDED LIVE RUN only after the signed ElevenLabs webhook stores a non-empty transcript. End the session, wait briefly, then verify its evidence.</p>
+        <strong>{authSession ? "Signed in — live voice enabled" : judgeMode ? "Sample calls: no sign-in needed" : "Live call mode"}</strong>
+        <p>{authSession
+          ? "Click Start live call, allow your microphone, talk to the buyer agent. End call → wait → Confirm call."
+          : judgeMode
+            ? "For the video demo, use Preview sample call or skip straight to Compare quotes →. For live voice, sign in (top right) first."
+            : "Sign in (top right) to run live voice calls. Sample calls work without an account."}</p>
       </div>
       {liveError && <span role="alert">{liveError}</span>}
     </section>
 
     <div className="call-layout">
       <section className="call-lanes">
-        <div className="call-header"><span>Provider & provenance</span><span>Connection</span><span>Call & transcript</span><span>Structured fields</span><span>Outcome</span></div>
+        <div className="call-header"><span>Vendor</span><span>Status</span><span>Call transcript</span><span>Quoted terms</span><span>Result</span></div>
 
         {providerCallList.map((item, index) => {
           const quote = customQuotes[index];
           const tone = quote.status === "quote" ? "good" : quote.status === "callback" ? "warn" : "bad";
-          const outcomeLabel = quote.status === "quote" ? "ITEMIZED QUOTE" : quote.status === "callback" ? "CALLBACK COMMITMENT" : "DOCUMENTED DECLINE";
+          const outcomeLabel = quote.status === "quote" ? "GOT A QUOTE" : quote.status === "callback" ? "CALLING BACK" : "DECLINED";
           const fields = getQuoteFields(quote);
           const transcriptLines = quote.evidence && quote.evidence.length > 0
             ? quote.evidence.map((ev) => `Live: “${ev.quote}”`)
@@ -316,13 +358,28 @@ export function CallRoom({
               <div>
                 <h2>{item.name}</h2>
                 <p>{item.style}</p>
-                {liveLane === index && liveStatus === "connected" ? <span className="provenance live">LIVE</span> : recordedLanes.includes(index) ? <span className="provenance recorded">RECORDED LIVE RUN</span> : pendingLanes.includes(index) ? <span className="provenance fixture">AWAITING SIGNED WEBHOOK</span> : <span className="provenance fixture">SIMULATED FIXTURE</span>}
+                {liveLane === index && liveStatus === "connected" ? <span className="provenance live">ON CALL</span> : recordedLanes.includes(index) ? <span className="provenance recorded">LIVE — SAVED</span> : pendingLanes.includes(index) ? <span className="provenance fixture">SAVING…</span> : <span className="provenance fixture">SAMPLE CALL</span>}
               </div>
               <div className="connection">
-                <span className={(running === index || liveLane === index) ? "connected" : ""}>{liveLane === index ? `Live ${liveStatus}` : running === index ? "Fixture connected" : "Ready"}</span>
+                <span className={(running === index || liveLane === index) ? "connected" : ""}>{liveLane === index ? "On call…" : running === index ? "Playing sample" : "Ready"}</span>
                 <strong>{running === index || liveLane === index ? "00m 18s" : "—"}</strong>
-                {liveLane === index ? <button onClick={(event) => { event.stopPropagation(); void stopLiveCall(); }}><PhoneOff size={14} /> End live</button> : pendingLanes.includes(index) ? <button onClick={(event) => { event.stopPropagation(); void verifyEvidence(index); }}><ShieldCheck size={14} /> Verify evidence</button> : <button disabled={liveLane !== null || liveStatus === "connecting"} onClick={(event) => { event.stopPropagation(); void startLiveCall(index); }}><Phone size={14} /> Start live call</button>}
-                {running === index ? <button className="fixture-control" onClick={(event) => { event.stopPropagation(); setRunning(null); }}><PhoneOff size={14} /> End fixture</button> : <button className="fixture-control" disabled={liveLane !== null} onClick={(event) => { event.stopPropagation(); setRunning(index); }}><RotateCcw size={13} /> Run fixture</button>}
+                {judgeMode ? (
+                  <>
+                    {liveLane === index
+                      ? <button className="primary-button" onClick={(event) => { event.stopPropagation(); void stopLiveCall(); }}><PhoneOff size={14} /> End call</button>
+                      : pendingLanes.includes(index)
+                        ? <button className="primary-button" onClick={(event) => { event.stopPropagation(); void verifyEvidence(index); }}><ShieldCheck size={14} /> Confirm call</button>
+                        : <button className="primary-button" disabled={liveLane !== null || liveStatus === "connecting"} onClick={(event) => { event.stopPropagation(); void startLiveCall(index); }}><Phone size={14} /> Start live call</button>}
+                    {running === index
+                      ? <button className="fixture-control" onClick={(event) => { event.stopPropagation(); setRunning(null); }}><PhoneOff size={14} /> Stop sample</button>
+                      : <button className="fixture-control" disabled={liveLane !== null} onClick={(event) => { event.stopPropagation(); setRunning(index); }}><RotateCcw size={13} /> Preview sample call</button>}
+                  </>
+                ) : (
+                  <>
+                    {liveLane === index ? <button onClick={(event) => { event.stopPropagation(); void stopLiveCall(); }}><PhoneOff size={14} /> End call</button> : pendingLanes.includes(index) ? <button onClick={(event) => { event.stopPropagation(); void verifyEvidence(index); }}><ShieldCheck size={14} /> Confirm call</button> : <button disabled={liveLane !== null || liveStatus === "connecting"} onClick={(event) => { event.stopPropagation(); void startLiveCall(index); }}><Phone size={14} /> Start live call</button>}
+                    {running === index ? <button className="fixture-control" onClick={(event) => { event.stopPropagation(); setRunning(null); }}><PhoneOff size={14} /> Stop sample</button> : <button className="fixture-control" disabled={liveLane !== null} onClick={(event) => { event.stopPropagation(); setRunning(index); }}><RotateCcw size={13} /> Preview sample call</button>}
+                  </>
+                )}
               </div>
               <div className="transcript-preview"><div className={`wave ${tone}`} />{transcriptLines.map((line) => <p key={line}>{line}</p>)}</div>
               <dl>{fields.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
@@ -332,22 +389,22 @@ export function CallRoom({
         })}
       </section>
       <aside className="workflow-panel evidence-inspector">
-        <span className="eyebrow">Evidence inspector</span>
+        <span className="eyebrow">What the agent said</span>
         <h2>{provider.name}</h2>
         <blockquote>“{
           customQuotes[selected].evidence && customQuotes[selected].evidence.length > 0
             ? customQuotes[selected].evidence[customQuotes[selected].evidence.length - 1].quote
             : provider.transcript[provider.transcript.length - 1]
         }”</blockquote>
-        <div><span>Supports</span><strong>{
+
+        <div><span>Key term</span><strong>{
           customQuotes[selected].status === "quote"
             ? `${getQuoteFields(customQuotes[selected])[3][0]}: ${getQuoteFields(customQuotes[selected])[3][1]}`
-            : `Status: ${customQuotes[selected].status.toUpperCase()}`
+            : `Result: ${customQuotes[selected].status.toUpperCase()}`
         }</strong></div>
-        <div><span>Source</span><strong>{recordedLanes.includes(selected) ? "Webhook-verified live run" : pendingLanes.includes(selected) ? "Awaiting signed webhook" : "Simulated fixture transcript"}</strong></div>
-        <div><span>Honesty check</span><strong><Bot size={15} /> AI disclosure present</strong></div>
-        <div><span>Style</span><strong>{provider.negotiationType}</strong></div>
-        <p>{recordedLanes.includes(selected) ? "A signed ElevenLabs webhook persisted a non-empty transcript for this run." : "Fixture or unverified evidence does not satisfy the challenge’s live-call criterion."}</p>
+        <div><span>Call type</span><strong>{recordedLanes.includes(selected) ? "Your live call \u2014 saved" : pendingLanes.includes(selected) ? "Saving live call\u2026" : "Sample call (demo)"}</strong></div>
+        <div><span>Approach</span><strong>{provider.negotiationType}</strong></div>
+        <p>{recordedLanes.includes(selected) ? "This is from your actual live call with this vendor." : "This is a pre-written sample to show you how the call goes."}</p>
       </aside>
     </div>
   </main>;

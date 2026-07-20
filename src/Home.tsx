@@ -3,6 +3,8 @@ import {
   AudioWaveform,
   Check,
   CircleAlert,
+  CircleDollarSign,
+  Clock,
   FileCheck2,
   LockKeyhole,
   Mic,
@@ -11,7 +13,8 @@ import {
   Sparkles,
   Trophy,
 } from "lucide-react";
-import { challengeModules, SCOPE_PRINT_SHORT, verticalPain, type ProofRow } from "./caseModel";
+import { challengeModules, SCOPE_PRINT_SHORT, type ProofRow } from "./caseModel";
+import { HowItWorksPanel } from "./HowItWorksPanel";
 
 type WorkflowStep = "Scope" | "Call room" | "Deal room" | "Award memo";
 
@@ -21,22 +24,35 @@ const providers = [
   { name: "MetroLab Field", total: "Decline", warranty: "—", eta: "—", outcome: "DECLINE", bars: [7,12,18,9,23,13,8,19,26,11,17,8,21,14,9,12] },
 ] as const;
 
-export function Home({ onOpen, proof }: { onOpen: (step: WorkflowStep) => void; proof: ProofRow[] }) {
+export function Home({ onOpen, onJudgeDemo, proof }: { onOpen: (step: WorkflowStep) => void; onJudgeDemo: () => void; proof: ProofRow[] }) {
   return <main className="home-screen visual-home" id="home">
+    <section className="judge-strip" aria-label="Quick start">
+      <strong>Try it now — no login needed</strong>
+      <ol>
+        <li>Click <b>Start demo</b> — repair brief loads automatically</li>
+        <li>Click <b>Compare quotes →</b> (skip calls if you want)</li>
+        <li>Drag downtime slider → <b>Open Award memo</b> → Approve</li>
+      </ol>
+      <button type="button" onClick={onJudgeDemo}>Start demo walkthrough <ArrowRight size={14} /></button>
+    </section>
+
     <section className="visual-hero">
       <div className="visual-hero-copy">
         <p className="home-challenge-line">The Negotiator · ElevenLabs × Hack-Nation</p>
-        <h1>Call, compare, and haggle — never overpay on a phone-priced repair.</h1>
-        <p>{verticalPain.market}: one confirmed brief, three live-style negotiations, one evidence-backed award.</p>
-        <button className="visual-primary" onClick={() => onOpen("Scope")}>Start the Estimator <ArrowRight /></button>
-        <small><ShieldCheck /> Simulated fixtures stay labeled until signed live evidence exists.</small>
+        <h1>Something broke at work. Get three repair quotes — without an afternoon of phone calls.</h1>
+        <p>For facility managers, lab ops, and anyone who fixes equipment by phone: lock one repair brief, let a voice agent call three vendors on the same job, compare fairly, and approve a memo you can forward to purchasing.</p>
+        <div className="hero-cta-row">
+          <button className="visual-primary" onClick={onJudgeDemo}>Start demo — no login <ArrowRight /></button>
+          <button type="button" className="visual-secondary" onClick={() => onOpen("Scope")}>Build a repair brief</button>
+        </div>
+        <small><ShieldCheck /> No account needed. Walk through the full flow in about 3 minutes.</small>
       </div>
 
-      <div className="decision-canvas" aria-label="Estimator scope flows into Caller negotiations and Closer award">
+      <div className="decision-canvas" aria-label="Repair brief flows into vendor calls and award recommendation">
         <section className="canvas-scope">
-          <header><span>01</span> ESTIMATOR</header>
+          <header><span>01</span> REPAIR BRIEF</header>
           <div className="scope-visual-card">
-            <div className="scope-locked"><Check /> Scope locked</div>
+            <div className="scope-locked"><Check /> Brief locked</div>
             <div className="instrument-visual" aria-hidden="true"><span /><span /><span /><span /></div>
             <strong>SpinPro X2</strong>
             <small>Centrifuge · Error E17</small>
@@ -48,7 +64,7 @@ export function Home({ onOpen, proof }: { onOpen: (step: WorkflowStep) => void; 
         <div className="canvas-connector" aria-hidden="true"><i /><i /><i /></div>
 
         <section className="canvas-calls">
-          <header><span>02</span> CALLER</header>
+          <header><span>02</span> CALL VENDORS</header>
           {providers.map((provider) => <article key={provider.name}>
             <div className="call-name"><i>{provider.name.slice(0, 2).toUpperCase()}</i><strong>{provider.name}</strong><em><span /> {provider.outcome}</em></div>
             <div className="waveform" aria-hidden="true">{provider.bars.map((height, bar) => <i key={bar} style={{ height }} />)}</div>
@@ -59,21 +75,127 @@ export function Home({ onOpen, proof }: { onOpen: (step: WorkflowStep) => void; 
         <div className="canvas-arrow" aria-hidden="true"><ArrowRight /></div>
 
         <section className="canvas-award">
-          <header><span>03</span> CLOSER</header>
+          <header><span>03</span> COMPARE</header>
           <div className="award-visual-card">
             <span className="award-trophy"><Trophy /></span>
-            <small>RECOMMENDATION</small>
+            <small>RECOMMENDED</small>
             <h2>OEM Precision</h2>
-            <ul><li><Check /> Fastest recovery</li><li><Check /> Complete scope</li><li><Check /> Strongest warranty</li></ul>
-            <div><small>EFFECTIVE COST</small><strong>$5,750</strong></div>
+            <ul><li><Check /> Fastest repair</li><li><Check /> Full job covered</li><li><Check /> Best warranty</li></ul>
+            <div><small>TOTAL WITH DOWNTIME</small><strong>$5,750</strong></div>
             <button onClick={() => onOpen("Award memo")}>View memo <ArrowRight /></button>
           </div>
         </section>
       </div>
     </section>
 
-    <section className="visual-journey" id="how-it-works">
-      <h2>The challenge loop — Estimator, Caller, Closer</h2>
+    <HowItWorksPanel onStartDemo={onJudgeDemo} />
+
+    <section className="life-scenario" id="when-to-use" aria-label="When BenchDial helps in daily lab life">
+      <div className="life-scenario-copy">
+        <p className="home-challenge-line">A Tuesday that happens every month</p>
+        <h2>The centrifuge dies at 9:10 a.m. Purchasing wants three quotes by lunch.</h2>
+        <p>
+          Saadia runs City Labs operations. Experiments stall while she repeats the same fault story to OEM, an independent shop, and a regional tech —
+          each with different call-out fees, calibration rules, and warranty language. The cheapest number often excludes the work that gets the bench back online.
+        </p>
+      </div>
+      <ol className="life-scenario-steps">
+        <li>
+          <strong>When the instrument fails</strong>
+          <span>Describe the fault by voice or upload your service report. Lock one repair brief so every vendor quotes the same job.</span>
+        </li>
+        <li>
+          <strong>When vendors only price by phone</strong>
+          <span>BenchDial calls three shops with the same brief — you get a quote, a negotiated price, or a documented decline.</span>
+        </li>
+        <li>
+          <strong>When the cheap bid looks too good</strong>
+          <span>Compare side-by-side, adjust for downtime cost, and get a ranked memo you can show purchasing.</span>
+        </li>
+      </ol>
+      <div className="life-scenario-why">
+        <ShieldCheck />
+        <div>
+          <strong>Why this problem is real</strong>
+          <p>Phone-priced repairs hide assumptions. Labs lose money twice — downtime while calling, and incomplete coverage after awarding the lowest headline price. BenchDial makes the pain comparable before anyone commits.</p>
+        </div>
+        <button type="button" className="visual-primary" onClick={onJudgeDemo}>See it on this case <ArrowRight /></button>
+      </div>
+    </section>
+
+    <section className="audience-value" id="for-whom" aria-label="Who BenchDial is for and what it does">
+      <div className="audience-value-copy">
+        <p className="home-challenge-line">Who it’s for</p>
+        <h2>Built for people who restore shared instruments — not for shopping carts.</h2>
+        <p>
+          Lab ops leads, facility managers, research coordinators, and student lab supervisors who get stuck on phone quotes when a centrifuge, freezer, or analyzer fails.
+          If you have to call three shops before lunch and defend the choice to purchasing, this is for you.
+        </p>
+      </div>
+      <ul className="value-pills" aria-label="What BenchDial helps you do">
+        <li>
+          <Clock />
+          <div>
+            <strong>Saves afternoon phone-tag</strong>
+            <span>One brief → three comparable vendor conversations instead of repeating the fault story by hand.</span>
+          </div>
+        </li>
+        <li>
+          <CircleDollarSign />
+          <div>
+            <strong>Stops “cheap” incomplete quotes</strong>
+            <span>Surfaces call-out, calibration, warranty, and downtime so the lowest sticker isn’t an automatic win.</span>
+          </div>
+        </li>
+        <li>
+          <FileCheck2 />
+          <div>
+            <strong>Gives you a defendable memo</strong>
+            <span>Ranked recommendation with transcript receipts — you still approve; BenchDial never buys.</span>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <section className="how-to-use" id="how-to-use" aria-label="How to use BenchDial">
+      <div className="how-to-use-copy">
+        <p className="home-challenge-line">How to use</p>
+        <h2>Four clicks. Same case every time.</h2>
+      </div>
+      <ol className="how-to-steps">
+        <li>
+          <strong>Step 1 · Repair brief</strong>
+          <span>Describe the fault by voice or upload a report. Lock the brief so every vendor gets the same job.</span>
+        </li>
+        <li>
+          <strong>Step 2 · Call vendors</strong>
+          <span>BenchDial calls three shops on that same job — listen to samples or try a live call.</span>
+        </li>
+        <li>
+          <strong>Step 3 · Compare quotes</strong>
+          <span>See every fee side-by-side. Move the downtime slider to see how ranking changes.</span>
+        </li>
+        <li>
+          <strong>Step 4 · Award memo</strong>
+          <span>Read the recommendation, check the evidence, and approve when you're ready.</span>
+        </li>
+      </ol>
+      <div className="fixture-explain" id="fixtures">
+        <Sparkles />
+        <div>
+          <strong>What are sample calls?</strong>
+          <p>
+            For the demo, three vendor calls are already filled in — a quote, a negotiated price, and a decline.
+            They are labeled <b>SAMPLE CALL</b> so you know they are not live recordings.
+            Click <b>Preview sample call</b> to hear one, or <b>Start live call</b> if you want to try with your microphone (no login needed).
+          </p>
+        </div>
+      </div>
+      <button type="button" className="visual-primary" onClick={onJudgeDemo}>Start demo with sample calls <ArrowRight /></button>
+    </section>
+
+    <section className="visual-journey" id="workflow-modules">
+      <h2>Four steps from breakdown to decision</h2>
       <div className="challenge-module-grid">
         {challengeModules.map((module) => (
           <button key={module.id} className="challenge-module-card" onClick={() => onOpen(module.screen)}>
@@ -112,7 +234,7 @@ export function Home({ onOpen, proof }: { onOpen: (step: WorkflowStep) => void; 
       </div>
 
       <button className="proof-cta" onClick={() => onOpen("Scope")}><Mic /> Build the repair brief <ArrowRight /></button>
-      <p><ShieldCheck /> BenchDial recommends. A human decides. <Phone size={14} /> Live Caller evidence verified.</p>
+      <p><ShieldCheck /> BenchDial recommends. You decide. <Phone size={14} /> Every quote is backed by a call transcript.</p>
     </section>
   </main>;
 }

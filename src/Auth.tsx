@@ -90,12 +90,12 @@ export function useAuth() {
 
 export function AuthControl({ onOpen }: { onOpen: () => void }) {
   const { session, loading, signOut } = useAuth();
-  if (loading) return <span className="auth-state">Checking live access…</span>;
-  if (!session) return <button className="auth-button" onClick={onOpen}><LogIn size={15} /> Open live workspace</button>;
+  if (loading) return <span className="auth-state">Checking session…</span>;
+  if (!session) return <button className="auth-button" onClick={onOpen} title="Optional — the demo works without signing in"><LogIn size={15} /> Sign in</button>;
   return <div className="auth-user"><span><ShieldCheck size={14} /> {session.user.email?.split("@")[0] ?? "Buyer"}</span><button onClick={() => void signOut()} aria-label="Log out"><LogOut size={15} /></button></div>;
 }
 
-export function LoginDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function LoginDialog({ open, onClose, reason }: { open: boolean; onClose: () => void; reason?: string }) {
   const { signIn, signUp, resetPassword } = useAuth();
   const [mode, setMode] = useState<AuthMode>("sign-in");
   const [email, setEmail] = useState("");
@@ -160,41 +160,41 @@ export function LoginDialog({ open, onClose }: { open: boolean; onClose: () => v
       } else if (mode === "sign-up") {
         const signedIn = await signUp(normalizedEmail, password);
         if (signedIn) onClose();
-        else setMessage("Confirm your buyer account from the message we sent, then unlock live calls.");
+        else setMessage("Check your email to confirm the account, then sign in.");
       } else {
         await resetPassword(normalizedEmail);
-        setMessage("Recovery link sent. Use it to restore live-call access.");
+        setMessage("Reset link sent — check your email.");
       }
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Could not unlock live calls.");
+      setError(reason instanceof Error ? reason.message : "Could not sign in.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const title = mode === "sign-in" ? "Enter your live negotiation workspace." : mode === "sign-up" ? "Create your BenchDial workspace." : "Recover your workspace access.";
-  const submitLabel = mode === "sign-in" ? "Open workspace" : mode === "sign-up" ? "Create workspace" : "Send recovery link";
+  const title = mode === "sign-in" ? "Sign in to your buyer seat." : mode === "sign-up" ? "Create a buyer seat." : "Reset your password.";
+  const submitLabel = mode === "sign-in" ? "Sign in" : mode === "sign-up" ? "Create seat" : "Send reset link";
 
   return <div className="auth-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
     <section ref={dialogRef} className="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title" aria-describedby="auth-description" onKeyDown={handleKeyDown}>
       <button className="auth-close" onClick={onClose} aria-label="Close authentication"><X /></button>
-      <span className="eyebrow">Live negotiation workspace</span>
+      <span className="eyebrow">Optional account</span>
       <h2 id="auth-title">{title}</h2>
-      <p id="auth-description">Save your repair brief, launch voice conversations, and keep the evidence trail attached to your workspace.</p>
+      <p id="auth-description">{reason ?? "You don't need an account for the demo. All four steps work without signing in. Sign in only if you want live voice calls saved to your account."}</p>
       <div className="auth-tabs" role="tablist" aria-label="Buyer access">
-        <button type="button" role="tab" aria-selected={mode === "sign-in"} onClick={() => changeMode("sign-in")}>Unlock</button>
-        <button type="button" role="tab" aria-selected={mode === "sign-up"} onClick={() => changeMode("sign-up")}>New buyer seat</button>
+        <button type="button" role="tab" aria-selected={mode === "sign-in"} onClick={() => changeMode("sign-in")}>Sign in</button>
+        <button type="button" role="tab" aria-selected={mode === "sign-up"} onClick={() => changeMode("sign-up")}>Create seat</button>
       </div>
       <form onSubmit={(event) => void submit(event)}>
-        <label>Workspace email<input ref={emailRef} type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@lab.org" autoComplete="email" required /></label>
-        {mode !== "reset" && <label>Access password<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === "sign-in" ? "current-password" : "new-password"} minLength={8} required /></label>}
+        <label>Email<input ref={emailRef} type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@lab.org" autoComplete="email" required /></label>
+        {mode !== "reset" && <label>Password<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === "sign-in" ? "current-password" : "new-password"} minLength={8} required /></label>}
         {error && <p className="warning" role="alert" aria-live="assertive">{error}</p>}
         {message && <p className="auth-message" role="status" aria-live="polite">{message}</p>}
-        <button className="home-primary" disabled={submitting}>{submitting ? "Opening live access…" : submitLabel}</button>
+        <button className="home-primary" disabled={submitting}>{submitting ? "Working…" : submitLabel}</button>
       </form>
-      {mode === "sign-in" && <button type="button" className="auth-link" onClick={() => changeMode("reset")}>Forgot access password?</button>}
-      {mode === "reset" && <button type="button" className="auth-link" onClick={() => changeMode("sign-in")}>Back to unlock</button>}
-      <small><ShieldCheck size={14} /> Supabase Auth holds credentials. BenchDial never stores them in the client.</small>
+      {mode === "sign-in" && <button type="button" className="auth-link" onClick={() => changeMode("reset")}>Forgot password?</button>}
+      {mode === "reset" && <button type="button" className="auth-link" onClick={() => changeMode("sign-in")}>Back to sign in</button>}
+      <small><ShieldCheck size={14} /> Optional. Demo and live voice work without an account.</small>
     </section>
   </div>;
 }

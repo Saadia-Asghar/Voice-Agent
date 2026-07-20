@@ -23,6 +23,25 @@ async function mintConversationToken(apiKey: string, agentId: string) {
   return typeof body.token === "string" ? body.token : null;
 }
 
+/** WebSocket signed URL — more reliable than LiveKit WebRTC behind restrictive networks. */
+async function mintSignedUrl(apiKey: string, agentId: string) {
+  const upstream = await fetch(`https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${encodeURIComponent(agentId)}`, {
+    headers: { "xi-api-key": apiKey },
+  });
+  if (!upstream.ok) return null;
+  const body = await upstream.json();
+  return typeof body.signed_url === "string" ? body.signed_url : null;
+}
+
+async function mintSessionCredentials(apiKey: string, agentId: string) {
+  const [token, signedUrl] = await Promise.all([
+    mintConversationToken(apiKey, agentId),
+    mintSignedUrl(apiKey, agentId),
+  ]);
+  if (!token && !signedUrl) return null;
+  return { token, signedUrl };
+}
+
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   const url = Deno.env.get("SUPABASE_URL");
@@ -33,18 +52,35 @@ Deno.serve(async (request) => {
   const db = createClient(url, serviceKey, { auth: { persistSession: false } });
   const requestUrl = new URL(request.url);
   const intakeAgentId = Deno.env.get("ELEVENLABS_INTAKE_AGENT_ID");
+  const buyerAgentIdEnv = Deno.env.get("ELEVENLABS_BUYER_AGENT_ID");
   const requestedAgentId = requestUrl.searchParams.get("agent_id");
   const providerNameEarly = requestUrl.searchParams.get("provider");
-  // Demo: Estimator/intake token stays open without a buyer login. Any provider= live Buyer lane still requires auth.
-  const openDemoIntake = request.method === "GET" && !providerNameEarly && (!intakeAgentId || requestedAgentId === intakeAgentId);
+  // Public demo: Estimator + Buyer voice tokens stay open without a buyer login (no provider= shortcut).
+  const openGetVoice = request.method === "GET" && !providerNameEarly && Boolean(requestedAgentId) && (
+    !intakeAgentId && !buyerAgentIdEnv
+    || requestedAgentId === intakeAgentId
+    || requestedAgentId === buyerAgentIdEnv
+  );
 
   const authorization = request.headers.get("Authorization");
   const accessToken = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
-  if (!openDemoIntake) {
+  const anonBearer = Boolean(accessToken && (accessToken === anonKey || (() => {
+    try {
+      const payload = JSON.parse(atob(accessToken.split(".")[1] ?? ""));
+      return payload.role === "anon";
+    } catch {
+      return false;
+    }
+  })()));
+
+  if (!openGetVoice) {
     if (!accessToken) return Response.json({ error: "Authentication required." }, { status: 401, headers: corsHeaders });
     const auth = createClient(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
     const { data: { user }, error: authError } = await auth.auth.getUser(accessToken);
-    if (authError || !user) return Response.json({ error: "Invalid or expired session." }, { status: 401, headers: corsHeaders });
+    // Judges / public demo may call bootstrap with the anon key after locking ScopePrint.
+    if ((authError || !user) && !(anonBearer && request.method === "POST")) {
+      return Response.json({ error: "Invalid or expired session." }, { status: 401, headers: corsHeaders });
+    }
   }
 
   if (request.method === "POST") {
@@ -77,8 +113,9 @@ Deno.serve(async (request) => {
         return Response.json({ error: "Confirmed scope specification required." }, { status: 400, headers: corsHeaders });
       }
 
-      const token = await mintConversationToken(apiKey, agentId);
-      if (!token) return Response.json({ error: "ElevenLabs token request failed." }, { status: 502, headers: corsHeaders });
+      const credentials = await mintSessionCredentials(apiKey, agentId);
+      if (!credentials) return Response.json({ error: "ElevenLabs token request failed." }, { status: 502, headers: corsHeaders });
+      const { token, signedUrl } = credentials;
 
       const specification = {
         ...input.specification,
@@ -120,7 +157,7 @@ Deno.serve(async (request) => {
         detail: { hash: await proofHash(proof) },
       });
       if (proofError) return Response.json({ error: "Could not secure the live evidence record." }, { status: 500, headers: corsHeaders });
-      return Response.json({ token, callId: call.id, sessionProof: proof }, { headers: { ...corsHeaders, "Cache-Control": "no-store" } });
+      return Response.json({ token, signedUrl, callId: call.id, sessionProof: proof }, { headers: { ...corsHeaders, "Cache-Control": "no-store" } });
     }
 
     if (!input?.callId || !input.proof || !["attach", "status"].includes(input.action ?? "")) {
@@ -213,7 +250,11 @@ Deno.serve(async (request) => {
     return Response.json({ error: "Use POST bootstrap with the locked ScopePrint for live Call Room sessions." }, { status: 400, headers: corsHeaders });
   }
 
-  const token = await mintConversationToken(apiKey, agentId);
-  if (!token) return Response.json({ error: "ElevenLabs token request failed." }, { status: 502, headers: corsHeaders });
-  return Response.json({ token, demoOpenIntake: openDemoIntake || undefined }, { headers: { ...corsHeaders, "Cache-Control": "no-store" } });
+  const credentials = await mintSessionCredentials(apiKey, agentId);
+  if (!credentials) return Response.json({ error: "ElevenLabs token request failed." }, { status: 502, headers: corsHeaders });
+  return Response.json({
+    token: credentials.token,
+    signedUrl: credentials.signedUrl,
+    demoOpenIntake: openGetVoice || undefined,
+  }, { headers: { ...corsHeaders, "Cache-Control": "no-store" } });
 });
