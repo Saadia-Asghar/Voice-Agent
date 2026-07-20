@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Activity, AudioWaveform, Check, ChevronRight, CircleAlert, FileText, LockKeyhole, Mic, Phone, ShieldCheck, Sparkles } from "lucide-react";
-import { SCOPE_PRINT_SHORT, buildChallengeProof, concessions, confirmScopePrint, judgeReadyScopeDraft, quotes, type ConfirmedScopePrint, verticalPain } from "./caseModel";
+import { SCOPE_PRINT_SHORT, buildChallengeProof, concessions, confirmScopePrint, judgeReadyScopeDraft, persistScopePrint, quotes, type ConfirmedScopePrint, verticalPain } from "./caseModel";
 import { currency, isSuspiciouslyLowQuote, knownCashTotal, rankQuotes } from "./domain";
 import { Home } from "./Home";
 import { DemoGuide } from "./DemoGuide";
@@ -20,6 +20,17 @@ const steps = [
 ] as const;
 type Step = (typeof steps)[number]["id"];
 type Screen = "Home" | Step;
+
+const SESSION_KEY = "benchdial-workflow-v1";
+
+type SavedSession = {
+  active: Screen;
+  downtime: number;
+  confirmedScope: ConfirmedScopePrint | null;
+  recordedLanes: number[];
+  liveLeverageVerified: boolean;
+  judgeMode: boolean;
+};
 
 export default function App() {
   const [active, setActive] = useState<Screen>("Home");
@@ -71,6 +82,7 @@ export default function App() {
     try {
       const scope = await confirmScopePrint(judgeReadyScopeDraft());
       setConfirmedScope(scope);
+      void persistScopePrint(scope);
       setCustomQuotes(quotes);
       setCustomConcessions(concessions);
       setRecordedLanes([]);
@@ -86,10 +98,38 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     if (params.get("judge") === "1" || params.get("demo") === "1") {
       void startJudgeDemo();
+      return;
+    }
+    try {
+      const raw = sessionStorage.getItem(SESSION_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as SavedSession;
+      if (saved.confirmedScope) setConfirmedScope(saved.confirmedScope);
+      if (saved.active && saved.active !== "Home") setActive(saved.active);
+      if (typeof saved.downtime === "number") setDowntime(saved.downtime);
+      if (Array.isArray(saved.recordedLanes)) setRecordedLanes(saved.recordedLanes);
+      if (saved.liveLeverageVerified) setLiveLeverageVerified(true);
+      if (saved.judgeMode) setJudgeMode(true);
+    } catch {
+      sessionStorage.removeItem(SESSION_KEY);
     }
     // One-shot deep link for judges (?judge=1 · ?demo=1)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("judge") === "1" || params.get("demo") === "1") return;
+    const payload: SavedSession = {
+      active,
+      downtime,
+      confirmedScope,
+      recordedLanes,
+      liveLeverageVerified,
+      judgeMode,
+    };
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(payload));
+  }, [active, downtime, confirmedScope, recordedLanes, liveLeverageVerified, judgeMode]);
 
   const workflowHint =
     active === "Scope" ? "Describe the fault by voice or upload a report, then lock the repair brief. Or click Load demo repair case to skip ahead."

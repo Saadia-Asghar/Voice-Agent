@@ -74,7 +74,7 @@ Deno.serve(async (request) => {
   const patch: Record<string, unknown> = event.type === "call_initiation_failure"
     ? { lifecycle: "failed", outcome: "failed", analysis: { failure_reason: event.data.failure_reason } }
     : event.type === "post_call_transcription"
-      ? { lifecycle: "completed", transcript: event.data.transcript ?? [], analysis: event.data.analysis ?? {}, has_audio: event.data.has_audio ?? false, ended_at: new Date(event.event_timestamp * 1000).toISOString() }
+      ? { lifecycle: "completed", provenance: "RECORDED_LIVE_RUN", transcript: event.data.transcript ?? [], analysis: event.data.analysis ?? {}, has_audio: event.data.has_audio ?? false, ended_at: new Date(event.event_timestamp * 1000).toISOString() }
       : { has_audio: true };
   const { error: callError } = await supabase.from("calls").update(patch).eq("conversation_id", conversationId);
   if (callError) return Response.json({ error: "Could not update call." }, { status: 500 });

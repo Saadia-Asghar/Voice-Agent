@@ -8,6 +8,7 @@ import {
   defaultScopeDraft,
   extractScopeFromFile,
   judgeReadyScopeDraft,
+  persistScopePrint,
   type ConfirmedScopePrint,
   type ConflictChoice,
   type ExtractSource,
@@ -62,6 +63,7 @@ export function ScopeStudio({ confirmedScope, onConfirm, onReset, onOpenCalls, j
     try {
       const scope = await confirmScopePrint(draft);
       onConfirm(scope);
+      void persistScopePrint(scope, session?.access_token);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Could not lock ScopePrint.");
     } finally {

@@ -1,12 +1,65 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MapPin, Search, ShieldCheck } from "lucide-react";
 import { providerCallList } from "./caseModel";
 
-const sources = ["Google Maps", "Yelp", "Approved vendor list"] as const;
+type DiscoveredVendor = {
+  name: string;
+  source: string;
+  phone: string;
+  rating: string;
+  detail: string;
+};
+
+const SOURCE_LABEL: Record<string, string> = {
+  google_maps: "Google Maps",
+  yelp: "Yelp",
+  approved_list: "Approved list",
+  demo_seed: "Demo seed",
+};
 
 export function VendorDiscovery({ site = "City Labs" }: { site?: string }) {
   const [phase, setPhase] = useState<"searching" | "results">("searching");
   const [visibleCount, setVisibleCount] = useState(0);
+  const [vendors, setVendors] = useState<DiscoveredVendor[]>(() =>
+    providerCallList.map((item, index) => ({
+      name: item.name,
+      source: ["google_maps", "yelp", "approved_list"][index] ?? "demo_seed",
+      phone: item.phone,
+      rating: item.rating,
+      detail: item.discovery,
+    })),
+  );
+  const [loadSource, setLoadSource] = useState<"local" | "database" | "providers_fallback">("local");
+
+  useEffect(() => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+    const publishableKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_ANON_KEY) as string | undefined;
+    if (!supabaseUrl || !publishableKey) return;
+
+    void (async () => {
+      try {
+        const response = await fetch(`${supabaseUrl}/functions/v1/list-vendors?region=Charlotte%20MSA`, {
+          headers: { apikey: publishableKey },
+        });
+        if (!response.ok) return;
+        const body = await response.json() as {
+          source?: string;
+          vendors?: { display_name: string; phone: string | null; source: string; rating: string | null; notes: string | null }[];
+        };
+        if (!body.vendors?.length) return;
+        setLoadSource(body.source === "database" ? "database" : "providers_fallback");
+        setVendors(body.vendors.slice(0, 3).map((row) => ({
+          name: row.display_name,
+          source: row.source,
+          phone: row.phone ?? "—",
+          rating: row.rating ?? "—",
+          detail: row.notes ?? "Matched for laboratory equipment repair near your site.",
+        })));
+      } catch {
+        // Keep local fixture list
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     const showResults = window.setTimeout(() => setPhase("results"), 1400);
@@ -15,10 +68,16 @@ export function VendorDiscovery({ site = "City Labs" }: { site?: string }) {
 
   useEffect(() => {
     if (phase !== "results") return;
-    if (visibleCount >= providerCallList.length) return;
+    if (visibleCount >= vendors.length) return;
     const tick = window.setTimeout(() => setVisibleCount((count) => count + 1), 320);
     return () => window.clearTimeout(tick);
-  }, [phase, visibleCount]);
+  }, [phase, visibleCount, vendors.length]);
+
+  const sourceNote = useMemo(() => {
+    if (loadSource === "database") return "Loaded from your approved vendor list in Postgres.";
+    if (loadSource === "providers_fallback") return "Loaded from seeded demo providers in Postgres.";
+    return "Showing local demo vendors — connect Supabase to load from database.";
+  }, [loadSource]);
 
   return (
     <section className="vendor-discovery" aria-label="How vendors are found">
@@ -36,22 +95,22 @@ export function VendorDiscovery({ site = "City Labs" }: { site?: string }) {
           <p>
             Searching <strong>Google Maps</strong>, <strong>Yelp</strong>, and your <strong>approved vendor list</strong> near {site}…
           </p>
-          <small>Demo preview — production uses live APIs. This demo shows the top 3 matches for the SpinPro X2 case.</small>
+          <small>{sourceNote}</small>
         </div>
       ) : (
         <>
           <p className="vendor-discovery-lede">
             <ShieldCheck size={14} />
-            Found {providerCallList.length} repair shops that service centrifuges near {site}. BenchDial picks the best three and calls them with your locked brief.
+            Found {vendors.length} repair shops that service centrifuges near {site}. BenchDial picks the best three and calls them with your locked brief.
           </p>
           <div className="vendor-discovery-grid">
-            {providerCallList.slice(0, visibleCount).map((item, index) => (
+            {vendors.slice(0, visibleCount).map((item) => (
               <article key={item.name}>
                 <header>
                   <strong>{item.name}</strong>
-                  <span className="vendor-source">{sources[index] ?? "Directory"}</span>
+                  <span className="vendor-source">{SOURCE_LABEL[item.source] ?? item.source}</span>
                 </header>
-                <p>{item.discovery}</p>
+                <p>{item.detail}</p>
                 <footer>
                   <MapPin size={12} /> {item.phone} · {item.rating}
                 </footer>
@@ -59,7 +118,7 @@ export function VendorDiscovery({ site = "City Labs" }: { site?: string }) {
             ))}
           </div>
           <p className="vendor-discovery-note">
-            <b>You cannot upload vendor PDFs or phone lists yet.</b> Upload is for the repair report only. Vendor numbers come from search + your approved list.
+            <b>Upload is for repair reports only.</b> Vendor numbers come from search + your approved list in the database.
           </p>
         </>
       )}

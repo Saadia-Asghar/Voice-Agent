@@ -23,10 +23,10 @@ export function AwardMemo({
   const recommendation = ranked.find((entry) => entry.effective !== null);
   const scopeId = confirmedScope?.shortId ?? SCOPE_PRINT_SHORT;
   const provenanceLabel = recordedLiveCount >= 3
-    ? "Based on live calls"
+    ? "Recorded live runs"
     : recordedLiveCount > 0
-      ? `${recordedLiveCount} of 3 live calls`
-      : "Based on sample calls";
+      ? `${recordedLiveCount} of 3 recorded live runs`
+      : "Simulated fixtures";
   const provenanceClass = recordedLiveCount > 0 ? "provenance recorded" : "provenance fixture";
   const winner = recommendation?.quote;
   const [reviewed, setReviewed] = useState(false);

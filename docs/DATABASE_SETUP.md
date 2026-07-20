@@ -26,6 +26,7 @@ In Supabase Dashboard → **SQL Editor**, run each file **in order**:
 
 1. `supabase/migrations/202607190001_benchbid_core.sql` — tables, enums, indexes, **RLS on all 8 tables**, revoke anon access  
 2. `supabase/migrations/202607200001_seed_demo_providers.sql` — OEM Precision, RapidBench, MetroLab Field  
+3. `supabase/migrations/202607200002_approved_vendors.sql` — approved vendor list for discovery UI  
 
 Or with CLI (after `npx supabase login`):
 
@@ -33,6 +34,8 @@ Or with CLI (after `npx supabase login`):
 cd D:\hp2\Documents\hacknation
 npx supabase link --project-ref gnzxgxvzflkystgrcfbz
 npx supabase db push
+npm run deploy:supabase
+npm run verify:stack
 ```
 
 ### Verify RLS (run in SQL Editor)
@@ -86,10 +89,19 @@ VITE_ELEVENLABS_INTAKE_AGENT_ID=<intake agent id>
 
 ```powershell
 cd D:\hp2\Documents\hacknation
+npm run deploy:supabase
+```
+
+Or deploy individually:
+
+```powershell
 npx supabase functions deploy elevenlabs-token --project-ref gnzxgxvzflkystgrcfbz
 npx supabase functions deploy elevenlabs-webhook --project-ref gnzxgxvzflkystgrcfbz --no-verify-jwt
 npx supabase functions deploy call-tools --project-ref gnzxgxvzflkystgrcfbz --no-verify-jwt
 npx supabase functions deploy extract-scope --project-ref gnzxgxvzflkystgrcfbz
+npx supabase functions deploy persist-scope --project-ref gnzxgxvzflkystgrcfbz
+npx supabase functions deploy health --project-ref gnzxgxvzflkystgrcfbz --no-verify-jwt
+npx supabase functions deploy list-vendors --project-ref gnzxgxvzflkystgrcfbz --no-verify-jwt
 ```
 
 `--no-verify-jwt` on webhook + call-tools is **intentional** — they use HMAC / shared secret instead of browser JWT.

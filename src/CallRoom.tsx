@@ -358,7 +358,7 @@ export function CallRoom({
               <div>
                 <h2>{item.name}</h2>
                 <p>{item.style}</p>
-                {liveLane === index && liveStatus === "connected" ? <span className="provenance live">ON CALL</span> : recordedLanes.includes(index) ? <span className="provenance recorded">LIVE — SAVED</span> : pendingLanes.includes(index) ? <span className="provenance fixture">SAVING…</span> : <span className="provenance fixture">SAMPLE CALL</span>}
+                {liveLane === index && liveStatus === "connected" ? <span className="provenance live">ON CALL</span> : recordedLanes.includes(index) ? <span className="provenance recorded">RECORDED LIVE RUN</span> : pendingLanes.includes(index) ? <span className="provenance fixture">AWAITING WEBHOOK</span> : <span className="provenance fixture">SIMULATED FIXTURE</span>}
               </div>
               <div className="connection">
                 <span className={(running === index || liveLane === index) ? "connected" : ""}>{liveLane === index ? "On call…" : running === index ? "Playing sample" : "Ready"}</span>
@@ -402,7 +402,7 @@ export function CallRoom({
             ? `${getQuoteFields(customQuotes[selected])[3][0]}: ${getQuoteFields(customQuotes[selected])[3][1]}`
             : `Result: ${customQuotes[selected].status.toUpperCase()}`
         }</strong></div>
-        <div><span>Call type</span><strong>{recordedLanes.includes(selected) ? "Your live call \u2014 saved" : pendingLanes.includes(selected) ? "Saving live call\u2026" : "Sample call (demo)"}</strong></div>
+        <div><span>Call type</span><strong>{recordedLanes.includes(selected) ? "Recorded live run — webhook verified" : pendingLanes.includes(selected) ? "Awaiting signed webhook…" : "Simulated fixture (demo)"}</strong></div>
         <div><span>Approach</span><strong>{provider.negotiationType}</strong></div>
         <p>{recordedLanes.includes(selected) ? "This is from your actual live call with this vendor." : "This is a pre-written sample to show you how the call goes."}</p>
       </aside>

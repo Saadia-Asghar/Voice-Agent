@@ -186,8 +186,8 @@ export function Home({ onOpen, onJudgeDemo, proof }: { onOpen: (step: WorkflowSt
           <strong>What are sample calls?</strong>
           <p>
             For the demo, three vendor calls are already filled in — a quote, a negotiated price, and a decline.
-            They are labeled <b>SAMPLE CALL</b> so you know they are not live recordings.
-            Click <b>Preview sample call</b> to hear one, or <b>Start live call</b> if you want to try with your microphone (no login needed).
+            They are labeled <b>SIMULATED FIXTURE</b> so you know they are not recorded live runs.
+            Click <b>Preview sample call</b> to hear one, or <b>Start live call</b> for a real voice session (allow mic).
           </p>
         </div>
       </div>

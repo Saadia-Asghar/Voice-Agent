@@ -1,8 +1,9 @@
 import type { ServiceScope } from "./contracts";
 import { concessions, quotes } from "./fixtures";
 import { labEquipmentRepair } from "./verticalConfig";
+import { shortIdFromHash } from "./shortId";
 
-/** Short display id used across the demo UI; full canonical hash is computed on lock. */
+/** Fallback display id when no scope is locked yet. */
 export const SCOPE_PRINT_SHORT = "BD-7F3A-1042";
 
 export type ConflictChoice = "voice" | "document" | null;
@@ -328,14 +329,42 @@ export async function confirmScopePrint(draft: ScopeDraft): Promise<ConfirmedSco
   const canonicalHash = await hashScopeJson(scopeJson);
   specification.canonicalHash = canonicalHash;
   const confirmedJson = stableStringify(specification);
+  const shortId = shortIdFromHash(canonicalHash);
   return {
-    shortId: SCOPE_PRINT_SHORT,
+    shortId,
     canonicalHash,
     confirmedAt: new Date().toISOString(),
     confirmedBy: "Saadia Asghar",
     specification: { ...specification, canonicalHash },
     scopeJson: confirmedJson,
   };
+}
+
+/** Persist locked ScopePrint to Postgres (best-effort; demo works offline). */
+export async function persistScopePrint(scope: ConfirmedScopePrint, accessToken?: string | null): Promise<boolean> {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+  const publishableKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_ANON_KEY) as string | undefined;
+  if (!supabaseUrl || !publishableKey) return false;
+  try {
+    const response = await fetch(`${supabaseUrl}/functions/v1/persist-scope`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken ?? publishableKey}`,
+        apikey: publishableKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        scopeHash: scope.canonicalHash,
+        scopeShortId: scope.shortId,
+        specification: scope.specification,
+        scopeJson: scope.scopeJson,
+        confirmedBy: scope.confirmedBy,
+      }),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
 }
 
 /** Call list provenance — challenge asks where providers come from in the real world. */
