@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { challengeModules, SCOPE_PRINT_SHORT, type ProofRow } from "./caseModel";
 import { HowItWorksPanel } from "./HowItWorksPanel";
+import { SetupKeysPanel } from "./SetupKeysPanel";
 
 type WorkflowStep = "Scope" | "Call room" | "Deal room" | "Award memo";
 
@@ -89,6 +90,8 @@ export function Home({ onOpen, onJudgeDemo, proof }: { onOpen: (step: WorkflowSt
     </section>
 
     <HowItWorksPanel onStartDemo={onJudgeDemo} />
+
+    <SetupKeysPanel />
 
     <section className="life-scenario" id="when-to-use" aria-label="When BenchDial helps in daily lab life">
       <div className="life-scenario-copy">

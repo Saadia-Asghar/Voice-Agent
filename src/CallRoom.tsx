@@ -279,7 +279,9 @@ export function CallRoom({
         return copy;
       });
     } catch (reason) {
-      setLiveError(reason instanceof Error ? reason.message : "Outbound dial failed.");
+      const message = reason instanceof Error ? reason.message : "Outbound dial failed.";
+      // Soft fail — never block the demo path
+      setLiveError(`${message} · Demo still works: Preview sample or Compare quotes →`);
     } finally {
       setDialingLanes((lanes) => lanes.filter((lane) => lane !== index));
     }

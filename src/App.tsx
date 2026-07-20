@@ -143,7 +143,7 @@ export default function App() {
       <header className={active === "Home" ? "topbar home-topbar" : "topbar"}>
         <button className="brand brand-button" onClick={() => openStep("Home")} aria-label="BenchDial home"><span className="brand-mark"><AudioWaveform /></span><span>BenchDial</span></button>
         {active === "Home" ? <nav className="home-nav" aria-label="Home navigation"><a href="#how-it-works">How it works</a><a href="#for-whom">Who it’s for</a><a href="#how-to-use">Steps</a><a href="#fixtures">Sample calls</a></nav> : <div className="case-title"><span className="eyebrow">Negotiator vertical · {labEquipmentRepair.label}</span><strong>SpinPro X2 / Error E17</strong></div>}
-        <div className="topbar-actions">{active === "Home" ? <button className="home-nav-cta" disabled={judgeBusy} onClick={() => void startJudgeDemo()}>{judgeBusy ? "Starting…" : "Try demo"} <ChevronRight size={16} /></button> : <div className="status-pill"><span className="status-dot" /> {confirmedScope ? "Repair brief locked" : "Demo ready"}</div>}<AuthControl onOpen={() => setLoginOpen(true)} /></div>
+        <div className="topbar-actions">{active === "Home" ? <><a className="home-nav-cta home-nav-cta-ghost" href="#connect-keys">Add keys</a><button className="home-nav-cta" disabled={judgeBusy} onClick={() => void startJudgeDemo()}>{judgeBusy ? "Starting…" : "Try demo"} <ChevronRight size={16} /></button></> : <div className="status-pill"><span className="status-dot" /> {confirmedScope ? "Repair brief locked" : "Demo ready"}</div>}<AuthControl onOpen={() => setLoginOpen(true)} /></div>
       </header>
 
       <LoginDialog open={loginOpen} onClose={() => { setLoginOpen(false); setLoginReason(undefined); }} reason={loginReason} />
