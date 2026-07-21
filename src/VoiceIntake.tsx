@@ -115,20 +115,20 @@ export function VoiceIntake({ onStarted, onDraftPatch }: Props) {
       if (!response.ok) throw new Error("Could not authorize the voice session.");
       const body = (await response.json()) as { token?: string; signedUrl?: string };
       onStarted?.();
-      // Prefer WebSocket signed URL — LiveKit WebRTC often fails behind firewalls/VPNs.
-      if (body.signedUrl) {
+      // Prefer WebRTC conversation token for instant sub-500ms voice detection over direct media stream.
+      if (body.token) {
         startSession({
-          signedUrl: body.signedUrl,
-          connectionType: "websocket",
+          conversationToken: body.token,
+          connectionType: "webrtc",
           userId: crypto.randomUUID(),
           onError: (msg) => setError(friendlyVoiceError(String(msg))),
         });
         return;
       }
-      if (body.token) {
+      if (body.signedUrl) {
         startSession({
-          conversationToken: body.token,
-          connectionType: "webrtc",
+          signedUrl: body.signedUrl,
+          connectionType: "websocket",
           userId: crypto.randomUUID(),
           onError: (msg) => setError(friendlyVoiceError(String(msg))),
         });

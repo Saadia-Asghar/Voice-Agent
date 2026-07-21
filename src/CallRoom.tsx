@@ -236,8 +236,8 @@ export function CallRoom({
         },
         onError: (msg: string) => setLiveError(String(msg)),
       };
-      if (signedUrl) startSession({ ...sessionBase, signedUrl, connectionType: "websocket" as const });
-      else if (token) startSession({ ...sessionBase, conversationToken: token, connectionType: "webrtc" as const });
+      if (token) startSession({ ...sessionBase, conversationToken: token, connectionType: "webrtc" as const });
+      else if (signedUrl) startSession({ ...sessionBase, signedUrl, connectionType: "websocket" as const });
       else throw new Error("Live session credentials were empty.");
     } catch (reason) {
       setLiveLane(null);
